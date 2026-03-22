@@ -1,0 +1,25 @@
+import Header from "@/components/Header";
+
+export default function JournalPage() {
+  return (
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      <Header />
+      <main
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--color-text-muted)",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h1 className="heading-1">Journal</h1>
+          <p className="body-1" style={{ marginTop: "var(--space-s)" }}>
+            Trading journal coming soon.
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+}

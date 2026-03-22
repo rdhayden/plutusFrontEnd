@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@import "../styles/design-tokens.css";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-body);
+  font-size: var(--body-1-size);
+  font-weight: var(--body-1-weight);
+  line-height: var(--body-1-line-height);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography utility classes */
+.heading-1 {
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-1-size);
+  font-weight: var(--heading-1-weight);
+  line-height: var(--heading-1-line-height);
+  letter-spacing: var(--heading-1-letter-spacing);
+}
+
+.heading-2 {
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-2-size);
+  font-weight: var(--heading-2-weight);
+  line-height: var(--heading-2-line-height);
+  letter-spacing: var(--heading-2-letter-spacing);
+}
+
+.heading-3 {
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-3-size);
+  font-weight: var(--heading-3-weight);
+  line-height: var(--heading-3-line-height);
+  letter-spacing: var(--heading-3-letter-spacing);
+}
+
+.body-1 {
+  font-family: var(--font-family-body);
+  font-size: var(--body-1-size);
+  font-weight: var(--body-1-weight);
+  line-height: var(--body-1-line-height);
+  letter-spacing: var(--body-1-letter-spacing);
+}
+
+.body-2 {
+  font-family: var(--font-family-body);
+  font-size: var(--body-2-size);
+  font-weight: var(--body-2-weight);
+  line-height: var(--body-2-line-height);
+  letter-spacing: var(--body-2-letter-spacing);
+}

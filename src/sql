@@ -1,0 +1,6 @@
+CREATE TABLE watchlist (
+  username TEXT NOT NULL,
+  ticker   TEXT NOT NULL,
+  notes    TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (username, ticker)
+);

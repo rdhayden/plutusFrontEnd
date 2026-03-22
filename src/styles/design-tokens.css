@@ -1,0 +1,150 @@
+/* ============================================
+   Design System Tokens
+   Centralised brand standards
+   ============================================ */
+
+:root {
+  /* ------------------------------------------
+     Colour Scale (HSL lightness 0–100, step 20)
+     ------------------------------------------ */
+
+  /* Grey */
+  --grey-0: hsl(220, 10%, 0%);
+  --grey-20: hsl(220, 10%, 20%);
+  --grey-40: hsl(220, 10%, 40%);
+  --grey-60: hsl(220, 10%, 60%);
+  --grey-80: hsl(220, 10%, 80%);
+  --grey-100: hsl(220, 10%, 100%);
+
+  /* Blue (primary) */
+  --blue-0: hsl(215, 80%, 0%);
+  --blue-20: hsl(215, 80%, 20%);
+  --blue-40: hsl(215, 80%, 40%);
+  --blue-60: hsl(215, 80%, 60%);
+  --blue-80: hsl(215, 80%, 80%);
+  --blue-100: hsl(215, 80%, 100%);
+
+  /* Green (positive / bullish) */
+  --green-0: hsl(145, 65%, 0%);
+  --green-20: hsl(145, 65%, 20%);
+  --green-40: hsl(145, 65%, 40%);
+  --green-60: hsl(145, 65%, 60%);
+  --green-80: hsl(145, 65%, 80%);
+  --green-100: hsl(145, 65%, 100%);
+
+  /* Red (negative / bearish) */
+  --red-0: hsl(0, 70%, 0%);
+  --red-20: hsl(0, 70%, 20%);
+  --red-40: hsl(0, 70%, 40%);
+  --red-60: hsl(0, 70%, 60%);
+  --red-80: hsl(0, 70%, 80%);
+  --red-100: hsl(0, 70%, 100%);
+
+  /* Teal (accent) */
+  --teal-0: hsl(180, 50%, 0%);
+  --teal-20: hsl(180, 50%, 20%);
+  --teal-40: hsl(180, 50%, 40%);
+  --teal-60: hsl(180, 50%, 60%);
+  --teal-80: hsl(180, 50%, 80%);
+  --teal-100: hsl(180, 50%, 100%);
+
+  /* ------------------------------------------
+     Typography
+     ------------------------------------------ */
+
+  --font-family-heading: "Inter", system-ui, -apple-system, sans-serif;
+  --font-family-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-family-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Heading 1 */
+  --heading-1-size: 2rem;
+  --heading-1-weight: 700;
+  --heading-1-line-height: 1.2;
+  --heading-1-letter-spacing: -0.02em;
+
+  /* Heading 2 */
+  --heading-2-size: 1.5rem;
+  --heading-2-weight: 600;
+  --heading-2-line-height: 1.3;
+  --heading-2-letter-spacing: -0.01em;
+
+  /* Heading 3 */
+  --heading-3-size: 1.125rem;
+  --heading-3-weight: 600;
+  --heading-3-line-height: 1.4;
+  --heading-3-letter-spacing: 0;
+
+  /* Body 1 */
+  --body-1-size: 0.9375rem;
+  --body-1-weight: 400;
+  --body-1-line-height: 1.5;
+  --body-1-letter-spacing: 0;
+
+  /* Body 2 */
+  --body-2-size: 0.8125rem;
+  --body-2-weight: 400;
+  --body-2-line-height: 1.5;
+  --body-2-letter-spacing: 0;
+
+  /* ------------------------------------------
+     Spacing
+     ------------------------------------------ */
+
+  --space-xs: 8px;
+  --space-s: 16px;
+  --space-m: 24px;
+  --space-l: 32px;
+  --space-xl: 48px;
+  --space-xxl: 64px;
+
+  /* ------------------------------------------
+     Padding (inset)
+     ------------------------------------------ */
+
+  --inset-xs: 8px;
+  --inset-s: 16px;
+  --inset-m: 24px;
+  --inset-l: 32px;
+  --inset-xl: 48px;
+
+  /* ------------------------------------------
+     Margin (outset)
+     ------------------------------------------ */
+
+  --outset-xs: 8px;
+  --outset-s: 16px;
+  --outset-m: 24px;
+  --outset-l: 32px;
+  --outset-xl: 48px;
+
+  /* ------------------------------------------
+     Semantic Aliases
+     ------------------------------------------ */
+
+  --color-bg: var(--grey-100);
+  --color-bg-secondary: hsl(220, 14%, 96%);
+  --color-bg-tertiary: hsl(220, 14%, 92%);
+  --color-text-primary: var(--grey-20);
+  --color-text-secondary: var(--grey-40);
+  --color-text-muted: var(--grey-60);
+  --color-border: hsl(220, 13%, 90%);
+  --color-border-light: hsl(220, 13%, 94%);
+  --color-primary: var(--blue-40);
+  --color-primary-hover: var(--blue-20);
+  --color-positive: var(--green-40);
+  --color-negative: var(--red-40);
+  --color-candle-up: hsl(145, 65%, 45%);
+  --color-candle-down: hsl(0, 70%, 55%);
+
+  /* ------------------------------------------
+     Misc
+     ------------------------------------------ */
+
+  --radius-s: 6px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --header-height: 64px;
+  --sidebar-width: 320px;
+}
