@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import Header from "@/components/Header";
 import SearchBar from "@/components/SearchBar";
-import Watchlist from "@/components/Watchlist";
+import SortableWatchlistItem from "@/components/SortableWatchlistItem";
 import SearchResults from "@/components/SearchResults";
 import ChartPanel from "@/components/ChartPanel";
-import { TickerSearchResult, ChartTab, Timeframe, AvailableSignal } from "@/lib/types";
+import { TickerSearchResult, ChartTab, Timeframe, AvailableSignal, WatchlistEntry, HorizontalLineDrawing } from "@/lib/types";
+import { useWatchlists } from "@/hooks/useWatchlists";
+import AddWatchlistModal from "@/components/AddWatchlistModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
@@ -17,13 +22,29 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [chartTabs, setChartTabs] = useState<ChartTab[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [drawingsPerTab, setDrawingsPerTab] = useState<Record<string, HorizontalLineDrawing[]>>({});
   const [isLoadingChart, setIsLoadingChart] = useState(false);
+  const [isRestoringState, setIsRestoringState] = useState(true);
   const [availableSignals, setAvailableSignals] = useState<AvailableSignal[]>([]);
   const [selectedSignal, setSelectedSignal] = useState("");
   const [liveMode, setLiveMode] = useState(false);
-  const [watchlistItems, setWatchlistItems] = useState<TickerSearchResult[]>([]);
-  const [watchlistOpen, setWatchlistOpen] = useState(false);
-  const [watchlistNotes, setWatchlistNotes] = useState<Record<string, string>>({});
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [confirmDeleteName, setConfirmDeleteName] = useState<string | null>(null);
+
+  const {
+    watchlists,
+    notes: watchlistNotes,
+    tickerMembership,
+    toggleWatchlist,
+    createWatchlist,
+    renameWatchlist,
+    deleteWatchlist,
+    reorderWatchlists,
+    addTicker,
+    removeTicker,
+    updateNote,
+    deleteNote,
+  } = useWatchlists();
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSearchRef = useRef("");
@@ -88,24 +109,6 @@ export default function Home() {
       .catch(() => console.error("Failed to fetch available signals"));
   }, []);
 
-  // Load watchlist from DB on mount
-  useEffect(() => {
-    fetch("/api/watchlist")
-      .then((res) => res.json())
-      .then((rows: { ticker: string; notes: string }[]) => {
-        setWatchlistItems(rows.map((r) => ({ ticker: r.ticker, name: null, exchange: null })));
-        const notes: Record<string, string> = {};
-        for (const r of rows) {
-          if (r.notes) notes[r.ticker] = r.notes;
-        }
-        setWatchlistNotes(notes);
-        if (rows.length > 0) setWatchlistOpen(true);
-      })
-      .catch(() => console.error("Failed to load watchlist"));
-  }, []);
-
-  // Debounce timer ref for note saves
-  const noteDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Keep a ref to the latest chartTabs so the liveMode effect never captures a stale value
   const chartTabsRef = useRef<ChartTab[]>(chartTabs);
@@ -170,7 +173,7 @@ export default function Home() {
 
         setChartTabs((prev) =>
           prev.map((t) =>
-            t.ticker === tab.ticker
+            t.id === tab.id
               ? { ...t, data: candles, lastPrice, signals: updatedSignals }
               : t
           )
@@ -181,15 +184,157 @@ export default function Home() {
     });
   }, [liveMode]);
 
+  // ── Persist chart state ────────────────────────────────────────────────────
+
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const chartTabsRef2 = useRef<ChartTab[]>(chartTabs);
+  chartTabsRef2.current = chartTabs;
+  const activeTabRef = useRef<string | null>(activeTab);
+  activeTabRef.current = activeTab;
+  const drawingsPerTabRef = useRef<Record<string, HorizontalLineDrawing[]>>(drawingsPerTab);
+  drawingsPerTabRef.current = drawingsPerTab;
+
+  const scheduleStateSave = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      const tabsToSave = chartTabsRef2.current.map((t) => ({
+        id: t.id,
+        ticker: t.ticker,
+        exchange: t.exchange,
+        name: t.name,
+        timeframe: t.timeframe,
+        from: t.from,
+        signals: t.signals.map((s) => ({
+          signalHash: s.signalHash,
+          signalName: s.signalName,
+          specification: s.specification,
+          visualiseWith: s.visualiseWith,
+        })),
+      }));
+      fetch("/api/chart-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tabs: tabsToSave,
+          activeTab: activeTabRef.current,
+          drawingsPerTab: drawingsPerTabRef.current,
+        }),
+      }).catch(() => console.error("Failed to persist chart state"));
+    }, 500);
+  }, []);
+
+  // Restore state on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/chart-state");
+        if (!res.ok) return;
+        const saved = await res.json() as {
+          tabs: { id: string; ticker: string; exchange: string | null; name: string; timeframe: string; from: string; signals: { signalHash: number; signalName: string; specification: { name: string; value: string }[]; visualiseWith: string[] }[] }[];
+          activeTab: string | null;
+          drawingsPerTab: Record<string, { id: string; price: number }[]>;
+        };
+        if (saved.tabs.length === 0) return;
+
+        const toDate = formatDate(new Date());
+
+        // Re-fetch price data + signals for each saved tab in parallel
+        const restoredTabs = await Promise.all(
+          saved.tabs.map(async (savedTab) => {
+            try {
+              const priceRes = await fetch("/api/signals", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  signalName: "PriceSignal",
+                  specification: [{ name: "ticker", value: savedTab.ticker }],
+                  ticker: savedTab.ticker,
+                  exchange: savedTab.exchange,
+                  from: savedTab.from,
+                  to: toDate,
+                  timeframe: savedTab.timeframe,
+                  liveMode: false,
+                }),
+              });
+              const priceData = await priceRes.json();
+              const candles = priceData.candles || [];
+              const lastPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
+
+              const restoredSignals = await Promise.all(
+                savedTab.signals.map(async (sig) => {
+                  try {
+                    const sigRes = await fetch("/api/signals", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        signalName: sig.signalName,
+                        specification: sig.specification,
+                        ticker: savedTab.ticker,
+                        exchange: savedTab.exchange,
+                        from: savedTab.from,
+                        to: toDate,
+                        timeframe: savedTab.timeframe,
+                        liveMode: false,
+                      }),
+                    });
+                    const sigData = await sigRes.json();
+                    return {
+                      signalName: sig.signalName,
+                      signalHash: sigData.signalHash ?? sig.signalHash,
+                      specification: sig.specification,
+                      timeSeries: sigData.timeSeries || [],
+                      visualiseWith: sig.visualiseWith,
+                    };
+                  } catch {
+                    return { ...sig, timeSeries: [] };
+                  }
+                })
+              );
+
+              return {
+                id: savedTab.id,
+                ticker: savedTab.ticker,
+                exchange: savedTab.exchange,
+                name: savedTab.name,
+                data: candles,
+                lastPrice,
+                timeframe: savedTab.timeframe as Timeframe,
+                from: savedTab.from,
+                signals: restoredSignals,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        const validTabs = restoredTabs.filter((t): t is ChartTab => t !== null);
+        if (validTabs.length > 0) {
+          setChartTabs(validTabs);
+          setActiveTab(saved.activeTab);
+          setDrawingsPerTab(saved.drawingsPerTab);
+        }
+      } catch {
+        console.error("Failed to restore chart state");
+      } finally {
+        setIsRestoringState(false);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ────────────────────────────────────────────────────────────────────────────
+
   const handleSearchResultSelect = useCallback(
     async (result: TickerSearchResult) => {
       setIsLoadingChart(true);
       setShowSearchResults(false);
       setSearchQuery("");
 
-      const existingTab = chartTabs.find((t) => t.ticker === result.ticker);
+      const tabId = result.exchange ? `${result.ticker}:${result.exchange}` : result.ticker;
+      const existingTab = chartTabs.find((t) => t.id === tabId);
       if (existingTab) {
-        setActiveTab(result.ticker);
+        setActiveTab(tabId);
         setIsLoadingChart(false);
         return;
       }
@@ -220,6 +365,7 @@ export default function Home() {
           candles.length > 0 ? candles[candles.length - 1].close : 0;
 
         const newTab: ChartTab = {
+          id: tabId,
           ticker: result.ticker,
           exchange: result.exchange,
           name: result.name || result.ticker,
@@ -231,23 +377,24 @@ export default function Home() {
         };
 
         setChartTabs((prev) => {
-          const existing = prev.find((t) => t.ticker === result.ticker);
+          const existing = prev.find((t) => t.id === tabId);
           if (existing) return prev;
           return [...prev, newTab];
         });
-        setActiveTab(result.ticker);
+        setActiveTab(tabId);
+        scheduleStateSave();
       } catch {
         console.error("Failed to fetch chart data");
       } finally {
         setIsLoadingChart(false);
       }
     },
-    [chartTabs, liveMode]
+    [chartTabs, liveMode, scheduleStateSave]
   );
 
   const handleTimeframeChange = useCallback(
-    async (ticker: string, timeframe: Timeframe) => {
-      const tab = chartTabs.find((t) => t.ticker === ticker);
+    async (tabId: string, timeframe: Timeframe) => {
+      const tab = chartTabs.find((t) => t.id === tabId);
       if (!tab) return;
 
       // Calculate from date so the new timeframe shows the same number of bars
@@ -265,7 +412,7 @@ export default function Home() {
 
       setChartTabs((prev) =>
         prev.map((t) =>
-          t.ticker === ticker ? { ...t, timeframe, data: [] } : t
+          t.id === tabId ? { ...t, timeframe, data: [] } : t
         )
       );
 
@@ -280,7 +427,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             signalName: "PriceSignal",
-            specification: [{ name: "ticker", value: ticker }],
+            specification: [{ name: "ticker", value: tab.ticker }],
             ticker: tab.ticker,
             exchange: tab.exchange,
             from: fromStr,
@@ -326,21 +473,22 @@ export default function Home() {
 
         setChartTabs((prev) =>
           prev.map((t) =>
-            t.ticker === ticker
+            t.id === tabId
               ? { ...t, data: candles, lastPrice, signals: updatedSignals, timeframe, from: fromStr }
               : t
           )
         );
+        scheduleStateSave();
       } catch {
         console.error("Failed to fetch chart data for timeframe change");
       }
     },
-    [chartTabs, liveMode]
+    [chartTabs, liveMode, scheduleStateSave]
   );
 
   const handleTimespanChange = useCallback(
-    async (ticker: string, direction: "expand" | "shrink") => {
-      const tab = chartTabs.find((t) => t.ticker === ticker);
+    async (tabId: string, direction: "expand" | "shrink") => {
+      const tab = chartTabs.find((t) => t.id === tabId);
       if (!tab) return;
 
       const now = new Date();
@@ -375,7 +523,7 @@ export default function Home() {
 
       setChartTabs((prev) =>
         prev.map((t) =>
-          t.ticker === ticker ? { ...t, data: [], from: newFromStr } : t
+          t.id === tabId ? { ...t, data: [], from: newFromStr } : t
         )
       );
 
@@ -385,7 +533,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             signalName: "PriceSignal",
-            specification: [{ name: "ticker", value: ticker }],
+            specification: [{ name: "ticker", value: tab.ticker }],
             ticker: tab.ticker,
             exchange: tab.exchange,
             from: newFromStr,
@@ -431,21 +579,22 @@ export default function Home() {
 
         setChartTabs((prev) =>
           prev.map((t) =>
-            t.ticker === ticker
+            t.id === tabId
               ? { ...t, data: candles, lastPrice, signals: updatedSignals, from: newFromStr }
               : t
           )
         );
+        scheduleStateSave();
       } catch {
         console.error("Failed to fetch chart data for timespan change");
       }
     },
-    [chartTabs, liveMode]
+    [chartTabs, liveMode, scheduleStateSave]
   );
 
   const handleAutoExpand = useCallback(
-    async (ticker: string) => {
-      const tab = chartTabs.find((t) => t.ticker === ticker);
+    async (tabId: string) => {
+      const tab = chartTabs.find((t) => t.id === tabId);
       if (!tab) return;
 
       const now = new Date();
@@ -462,7 +611,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             signalName: "PriceSignal",
-            specification: [{ name: "ticker", value: ticker }],
+            specification: [{ name: "ticker", value: tab.ticker }],
             ticker: tab.ticker,
             exchange: tab.exchange,
             from: newFromStr,
@@ -508,25 +657,26 @@ export default function Home() {
 
         setChartTabs((prev) =>
           prev.map((t) =>
-            t.ticker === ticker
+            t.id === tabId
               ? { ...t, data: candles, lastPrice, from: newFromStr, signals: updatedSignals }
               : t
           )
         );
+        scheduleStateSave();
       } catch {
         console.error("Failed to auto-expand chart data");
       }
     },
-    [chartTabs, liveMode]
+    [chartTabs, liveMode, scheduleStateSave]
   );
 
   const handleAddSignal = useCallback(
     async (
-      ticker: string,
+      tabId: string,
       signalName: string,
       specification: { name: string; value: string }[]
     ): Promise<string | null> => {
-      const tab = chartTabs.find((t) => t.ticker === ticker);
+      const tab = chartTabs.find((t) => t.id === tabId);
       if (!tab) return "No active chart";
 
       const isDuplicate = tab.signals.some(
@@ -580,96 +730,107 @@ export default function Home() {
 
         setChartTabs((prev) =>
           prev.map((t) =>
-            t.ticker === ticker
+            t.id === tabId
               ? { ...t, signals: [...t.signals, newOverlay] }
               : t
           )
         );
+        scheduleStateSave();
 
         return null;
       } catch {
         return "Failed to fetch signal data";
       }
     },
-    [chartTabs, availableSignals, liveMode]
+    [chartTabs, availableSignals, liveMode, scheduleStateSave]
   );
 
-  const handleTabClose = useCallback((ticker: string) => {
+  const handleRemoveSubChart = useCallback((tabId: string, signalHashes: number[]) => {
+    setChartTabs((prev) =>
+      prev.map((t) =>
+        t.id === tabId
+          ? { ...t, signals: t.signals.filter((s) => !signalHashes.includes(s.signalHash)) }
+          : t
+      )
+    );
+    scheduleStateSave();
+  }, [scheduleStateSave]);
+
+  const handleTabClose = useCallback((tabId: string) => {
     setChartTabs((prev) => {
-      const remaining = prev.filter((t) => t.ticker !== ticker);
+      const remaining = prev.filter((t) => t.id !== tabId);
       setActiveTab((active) => {
-        if (active !== ticker) return active;
+        if (active !== tabId) return active;
         if (remaining.length === 0) return null;
-        const closedIndex = prev.findIndex((t) => t.ticker === ticker);
-        return remaining[Math.min(closedIndex, remaining.length - 1)].ticker;
+        const closedIndex = prev.findIndex((t) => t.id === tabId);
+        return remaining[Math.min(closedIndex, remaining.length - 1)].id;
       });
       return remaining;
     });
-  }, []);
-
-  const handleAddToWatchlist = useCallback((result: TickerSearchResult) => {
-    setWatchlistItems((prev) => {
-      if (prev.some((item) => item.ticker === result.ticker)) return prev;
-      return [...prev, result];
-    });
-    setWatchlistOpen(true);
-    // Persist to DB after state update
-    fetch("/api/watchlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ticker: result.ticker }),
-    }).catch(() => console.error("Failed to save watchlist entry"));
-  }, []);
-
-  const handleWatchlistRemove = useCallback((ticker: string) => {
-    setWatchlistItems((prev) => prev.filter((item) => item.ticker !== ticker));
-    setWatchlistNotes((prev) => {
+    setDrawingsPerTab((prev) => {
       const next = { ...prev };
-      delete next[ticker];
+      delete next[tabId];
       return next;
     });
-    // Persist to DB after state update
-    fetch(`/api/watchlist/${encodeURIComponent(ticker)}`, {
-      method: "DELETE",
-    }).catch(() => console.error("Failed to delete watchlist entry"));
-  }, []);
+    scheduleStateSave();
+  }, [scheduleStateSave]);
 
-  const handleNoteChange = useCallback((ticker: string, note: string) => {
-    setWatchlistNotes((prev) => ({ ...prev, [ticker]: note }));
-    // Debounce DB write — wait 600ms after last keystroke
-    if (noteDebounceRef.current[ticker]) {
-      clearTimeout(noteDebounceRef.current[ticker]);
-    }
-    noteDebounceRef.current[ticker] = setTimeout(() => {
-      fetch(`/api/watchlist/${encodeURIComponent(ticker)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: note }),
-      }).catch(() => console.error("Failed to save note"));
-    }, 600);
-  }, []);
+  const handleDrawingsChange = useCallback(
+    (tabId: string, drawings: HorizontalLineDrawing[]) => {
+      setDrawingsPerTab((prev) => ({ ...prev, [tabId]: drawings }));
+      scheduleStateSave();
+    },
+    [scheduleStateSave]
+  );
 
-  const handleNoteDelete = useCallback((ticker: string) => {
-    setWatchlistNotes((prev) => {
-      const next = { ...prev };
-      delete next[ticker];
-      return next;
-    });
-    // Clear any pending debounce, then write empty notes immediately
-    if (noteDebounceRef.current[ticker]) {
-      clearTimeout(noteDebounceRef.current[ticker]);
-      delete noteDebounceRef.current[ticker];
-    }
-    fetch(`/api/watchlist/${encodeURIComponent(ticker)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes: "" }),
-    }).catch(() => console.error("Failed to delete note"));
-  }, []);
+  const handleTabSelect = useCallback(
+    (tabId: string) => {
+      setActiveTab(tabId);
+      scheduleStateSave();
+    },
+    [scheduleStateSave]
+  );
 
-  const handleWatchlistSelect = useCallback((result: TickerSearchResult) => {
-    handleSearchResultSelect(result);
-  }, [handleSearchResultSelect]);
+  const handleAddToWatchlist = useCallback(
+    (result: TickerSearchResult, watchlistName: string) => {
+      addTicker(watchlistName, result);
+    },
+    [addTicker]
+  );
+
+  const handleWatchlistSelect = useCallback(
+    (entry: WatchlistEntry) => {
+      handleSearchResultSelect({ ticker: entry.ticker, name: entry.name, exchange: entry.exchange, exchange_name: null });
+    },
+    [handleSearchResultSelect]
+  );
+
+  const handleNoteChange = useCallback(
+    (ticker: string, note: string) => {
+      updateNote(ticker, note, Array.from(tickerMembership.get(ticker) ?? []));
+    },
+    [updateNote, tickerMembership]
+  );
+
+  const handleNoteDelete = useCallback(
+    (ticker: string) => {
+      deleteNote(ticker, Array.from(tickerMembership.get(ticker) ?? []));
+    },
+    [deleteNote, tickerMembership]
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = watchlists.findIndex((wl) => wl.name === active.id);
+      const newIndex = watchlists.findIndex((wl) => wl.name === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+      const reordered = arrayMove(watchlists, oldIndex, newIndex);
+      reorderWatchlists(reordered);
+    },
+    [watchlists, reorderWatchlists]
+  );
 
   const handleCloseSearch = useCallback(() => {
     setShowSearchResults(false);
@@ -706,16 +867,60 @@ export default function Home() {
               if (searchQuery.length >= 1) setShowSearchResults(true);
             }}
           />
-          <Watchlist
-            items={watchlistItems}
-            isOpen={watchlistOpen}
-            onToggle={() => setWatchlistOpen((o) => !o)}
-            onSelect={handleWatchlistSelect}
-            onRemove={handleWatchlistRemove}
-            notes={watchlistNotes}
-            onNoteChange={handleNoteChange}
-            onNoteDelete={handleNoteDelete}
-          />
+
+          {/* Add Watchlist button */}
+          <div style={{ padding: "var(--inset-s)", borderBottom: "1px solid var(--color-border)" }}>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                width: "100%",
+                padding: "var(--inset-xs) var(--inset-s)",
+                background: "transparent",
+                border: "1px solid var(--color-border)",
+                borderRadius: "var(--radius-s)",
+                cursor: "pointer",
+                fontSize: "var(--body-2-size)",
+                color: "var(--color-text-primary)",
+                textAlign: "center",
+              }}
+            >
+              + Add Watchlist
+            </button>
+          </div>
+
+          {/* Watchlist panels */}
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={watchlists.map((wl) => wl.name)}
+                strategy={verticalListSortingStrategy}
+              >
+                {watchlists.map((wl) => (
+                  <SortableWatchlistItem
+                    key={wl.name}
+                    id={wl.name}
+                    name={wl.name}
+                    items={wl.entries}
+                    isOpen={wl.isOpen}
+                    onToggle={() => toggleWatchlist(wl.name)}
+                    onSelect={handleWatchlistSelect}
+                    onRemove={(ticker) => removeTicker(wl.name, ticker)}
+                    onDelete={() => {
+                      if (wl.entries.length > 0) {
+                        setConfirmDeleteName(wl.name);
+                      } else {
+                        deleteWatchlist(wl.name);
+                      }
+                    }}
+                    onRename={(newName) => renameWatchlist(wl.name, newName)}
+                    notes={watchlistNotes}
+                    onNoteChange={handleNoteChange}
+                    onNoteDelete={handleNoteDelete}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </div>
         </aside>
 
         {/* Search Results Panel */}
@@ -725,7 +930,8 @@ export default function Home() {
             searchQuery={searchQuery}
             isLoading={isSearching}
             showTypeMore={searchQuery.length === 1}
-            watchlistTickers={new Set(watchlistItems.map((i) => i.ticker))}
+            watchlistNames={watchlists.map((wl) => wl.name)}
+            tickerMembership={tickerMembership}
             onSelect={handleSearchResultSelect}
             onAddToWatchlist={handleAddToWatchlist}
             onClose={handleCloseSearch}
@@ -742,7 +948,7 @@ export default function Home() {
             background: "var(--color-bg)",
           }}
         >
-          {isLoadingChart ? (
+          {isRestoringState || isLoadingChart ? (
             <div
               style={{
                 flex: 1,
@@ -752,25 +958,52 @@ export default function Home() {
                 color: "var(--color-text-muted)",
               }}
             >
-              Loading chart data...
+              {isRestoringState ? "Restoring charts..." : "Loading chart data..."}
             </div>
           ) : (
             <ChartPanel
               tabs={chartTabs}
               activeTab={activeTab}
-              onTabSelect={setActiveTab}
+              onTabSelect={handleTabSelect}
               onTimeframeChange={handleTimeframeChange}
               onTimespanChange={handleTimespanChange}
               onAddSignal={handleAddSignal}
               onAutoExpand={handleAutoExpand}
               onTabClose={handleTabClose}
+              onRemoveSubChart={handleRemoveSubChart}
               availableSignals={availableSignals}
               selectedSignal={selectedSignal}
               onSignalChange={setSelectedSignal}
+              drawingsPerTab={drawingsPerTab}
+              onDrawingsChange={handleDrawingsChange}
             />
           )}
         </main>
       </div>
+
+      {/* Add Watchlist modal */}
+      {showAddModal && (
+        <AddWatchlistModal
+          onConfirm={(name) => {
+            const error = createWatchlist(name);
+            if (!error) setShowAddModal(false);
+            return error;
+          }}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {confirmDeleteName !== null && (
+        <ConfirmDialog
+          message="Watchlist not empty, are you sure you want to delete it?"
+          onConfirm={() => {
+            deleteWatchlist(confirmDeleteName);
+            setConfirmDeleteName(null);
+          }}
+          onCancel={() => setConfirmDeleteName(null)}
+        />
+      )}
     </div>
   );
 }

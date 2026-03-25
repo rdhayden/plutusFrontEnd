@@ -2,13 +2,17 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import SearchResults from "@/components/SearchResults";
 
+const mkResult = (ticker: string, name: string | null, exchange: string | null, exchange_name: string | null = null) =>
+  ({ ticker, name, exchange, exchange_name });
+
 describe("SearchResults", () => {
   const defaultProps = {
     results: [],
     searchQuery: "AA",
     isLoading: false,
     showTypeMore: false,
-    watchlistTickers: new Set<string>(),
+    watchlistNames: [] as string[],
+    tickerMembership: new Map<string, Set<string>>(),
     onSelect: vi.fn(),
     onAddToWatchlist: vi.fn(),
     onClose: vi.fn(),
@@ -24,8 +28,8 @@ describe("SearchResults", () => {
       <SearchResults
         {...defaultProps}
         results={[
-          { ticker: "AAPL", name: "Apple Inc.", exchange: "XNAS" },
-          { ticker: "AAPD", name: "Direxion", exchange: "XNAS" },
+          mkResult("AAPL", "Apple Inc.", "XNAS"),
+          mkResult("AAPD", "Direxion", "XNAS"),
         ]}
         searchQuery="AA"
       />
@@ -37,7 +41,7 @@ describe("SearchResults", () => {
     render(
       <SearchResults
         {...defaultProps}
-        results={[{ ticker: "AAPL", name: "Apple Inc.", exchange: "XNAS" }]}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
         searchQuery="AAPL"
       />
     );
@@ -59,8 +63,8 @@ describe("SearchResults", () => {
       <SearchResults
         {...defaultProps}
         results={[
-          { ticker: "AAPL", name: "Apple Inc.", exchange: "XNAS" },
-          { ticker: "MSFT", name: "Microsoft Corp.", exchange: "XNAS" },
+          mkResult("AAPL", "Apple Inc.", "XNAS"),
+          mkResult("MSFT", "Microsoft Corp.", "XNAS"),
         ]}
       />
     );
@@ -70,33 +74,47 @@ describe("SearchResults", () => {
     expect(container.textContent).toContain("Microsoft Corp.");
   });
 
-  it("calls onSelect when a result is clicked", () => {
-    const onSelect = vi.fn();
-
+  it("renders exchange_name when present", () => {
     const { container } = render(
       <SearchResults
         {...defaultProps}
-        results={[{ ticker: "AAPL", name: "Apple Inc.", exchange: "XNAS" }]}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS", "NASDAQ")]}
+      />
+    );
+    expect(container.textContent).toContain("AAPL");
+    expect(container.textContent).toContain("NASDAQ");
+  });
+
+  it("does not render exchange_name when null", () => {
+    const { container } = render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS", null)]}
+      />
+    );
+    expect(container.textContent).toContain("AAPL");
+    expect(container.textContent).not.toContain("null");
+  });
+
+  it("calls onSelect when a result is clicked", () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
         onSelect={onSelect}
       />
     );
-
-    // Find the result button (not the close button) via container query
     const buttons = container.querySelectorAll("button");
     const resultBtn = Array.from(buttons).find((b) => b.textContent?.includes("AAPL"))!;
     fireEvent.click(resultBtn);
-    expect(onSelect).toHaveBeenCalledWith({ ticker: "AAPL", name: "Apple Inc.", exchange: "XNAS" });
+    expect(onSelect).toHaveBeenCalledWith(mkResult("AAPL", "Apple Inc.", "XNAS"));
   });
 
   it("calls onClose when the close button is clicked", () => {
     const onClose = vi.fn();
-    const { container } = render(
-      <SearchResults {...defaultProps} onClose={onClose} />
-    );
-
-    // The close button contains an SVG with an X icon
+    const { container } = render(<SearchResults {...defaultProps} onClose={onClose} />);
     const svgs = container.querySelectorAll("svg");
-    // The X/close SVG has lines (not circles like the search icon)
     const closeBtn = Array.from(svgs)
       .find((svg) => svg.querySelector("line"))
       ?.closest("button");
@@ -109,9 +127,88 @@ describe("SearchResults", () => {
     const { container } = render(
       <SearchResults
         {...defaultProps}
-        results={[{ ticker: "XYZ", name: null, exchange: null }]}
+        results={[mkResult("XYZ", null, null)]}
       />
     );
     expect(container.textContent).toContain("XYZ");
+  });
+
+  it("right-click opens context menu with 'no watchlists' when watchlistNames is empty", () => {
+    render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
+        watchlistNames={[]}
+      />
+    );
+    const resultBtn = screen.getAllByText("AAPL")[0].closest("button")!;
+    fireEvent.contextMenu(resultBtn);
+    expect(screen.getByText("Add to watchlist")).toBeTruthy();
+    expect(screen.getByText("no watchlists")).toBeTruthy();
+  });
+
+  it("right-click shows all watchlist names in submenu", () => {
+    render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
+        watchlistNames={["Holdings", "Shortlist"]}
+      />
+    );
+    fireEvent.contextMenu(screen.getAllByText("AAPL")[0].closest("button")!);
+    expect(screen.getByText("Holdings")).toBeTruthy();
+    expect(screen.getByText("Shortlist")).toBeTruthy();
+  });
+
+  it("calls onAddToWatchlist with correct watchlist name when a name is clicked", () => {
+    const onAddToWatchlist = vi.fn();
+    render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
+        watchlistNames={["Holdings", "Shortlist"]}
+        onAddToWatchlist={onAddToWatchlist}
+      />
+    );
+    fireEvent.contextMenu(screen.getAllByText("AAPL")[0].closest("button")!);
+    fireEvent.click(screen.getByText("Holdings"));
+    expect(onAddToWatchlist).toHaveBeenCalledWith(
+      mkResult("AAPL", "Apple Inc.", "XNAS"),
+      "Holdings"
+    );
+  });
+
+  it("greys out and disables watchlist names the ticker already belongs to", () => {
+    const membership = new Map([["AAPL", new Set(["Holdings"])]]);
+    render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
+        watchlistNames={["Holdings", "Shortlist"]}
+        tickerMembership={membership}
+      />
+    );
+    fireEvent.contextMenu(screen.getAllByText("AAPL")[0].closest("button")!);
+    const holdingsBtn = screen.getByText("Holdings").closest("button")!;
+    const shortlistBtn = screen.getByText("Shortlist").closest("button")!;
+    expect(holdingsBtn).toBeDisabled();
+    expect(shortlistBtn).not.toBeDisabled();
+  });
+
+  it("does not call onAddToWatchlist when clicking a greyed-out watchlist name", () => {
+    const onAddToWatchlist = vi.fn();
+    const membership = new Map([["AAPL", new Set(["Holdings"])]]);
+    render(
+      <SearchResults
+        {...defaultProps}
+        results={[mkResult("AAPL", "Apple Inc.", "XNAS")]}
+        watchlistNames={["Holdings"]}
+        tickerMembership={membership}
+        onAddToWatchlist={onAddToWatchlist}
+      />
+    );
+    fireEvent.contextMenu(screen.getAllByText("AAPL")[0].closest("button")!);
+    fireEvent.click(screen.getByText("Holdings"));
+    expect(onAddToWatchlist).not.toHaveBeenCalled();
   });
 });

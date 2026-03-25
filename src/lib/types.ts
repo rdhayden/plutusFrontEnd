@@ -1,7 +1,22 @@
+export interface WatchlistEntry {
+  ticker: string;
+  name: string | null;
+  exchange: string | null;
+  notes: string;
+}
+
+export interface Watchlist {
+  name: string;
+  displayOrder: number;
+  isOpen: boolean;
+  entries: WatchlistEntry[];
+}
+
 export interface TickerSearchResult {
   ticker: string;
   name: string | null;
   exchange: string | null;
+  exchange_name: string | null;
 }
 
 export type Timeframe =
@@ -62,7 +77,13 @@ export interface SignalOverlay {
   visualiseWith: string[];
 }
 
+export interface HorizontalLineDrawing {
+  id: string;
+  price: number;
+}
+
 export interface ChartTab {
+  id: string;
   ticker: string;
   exchange: string | null;
   name: string;

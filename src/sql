@@ -1,6 +1,48 @@
+CREATE TABLE watchlists (
+  username      TEXT    NOT NULL,
+  name          TEXT    NOT NULL,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (username, name)
+);
+
 CREATE TABLE watchlist (
-  username TEXT NOT NULL,
-  ticker   TEXT NOT NULL,
-  notes    TEXT NOT NULL DEFAULT '',
-  PRIMARY KEY (username, ticker)
+  username       TEXT NOT NULL,
+  watchlist_name TEXT NOT NULL,
+  ticker         TEXT NOT NULL,
+  exchange       TEXT,
+  name           TEXT,
+  notes          TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (username, watchlist_name, ticker)
+);
+
+CREATE TABLE chart_tabs (
+  username      TEXT    NOT NULL,
+  tab_id        TEXT    NOT NULL,
+  ticker        TEXT    NOT NULL,
+  exchange      TEXT,
+  name          TEXT    NOT NULL,
+  timeframe     TEXT    NOT NULL,
+  from_date     TEXT    NOT NULL,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  is_active     BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (username, tab_id)
+);
+
+CREATE TABLE chart_tab_signals (
+  username       TEXT    NOT NULL,
+  tab_id         TEXT    NOT NULL,
+  signal_hash    BIGINT  NOT NULL,
+  signal_name    TEXT    NOT NULL,
+  specification  JSONB   NOT NULL,
+  visualise_with JSONB   NOT NULL DEFAULT '[]',
+  display_order  INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (username, tab_id, signal_hash)
+);
+
+CREATE TABLE chart_tab_drawings (
+  username   TEXT    NOT NULL,
+  tab_id     TEXT    NOT NULL,
+  drawing_id TEXT    NOT NULL,
+  price      NUMERIC NOT NULL,
+  PRIMARY KEY (username, tab_id, drawing_id)
 );

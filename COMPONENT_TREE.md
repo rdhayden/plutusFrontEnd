@@ -56,11 +56,13 @@ classDiagram
         ChartPanel.tsx
         -showConfigPanel: boolean
         -duplicateMessage: string
+        -volumeVisiblePerTab: Record~string,boolean~
         +onTabSelect(ticker)
         +onTimeframeChange(ticker, tf)
         +onTimespanChange(ticker, dir)
         +onAddSignal(ticker, name, spec)
         +onAutoExpand(ticker)
+        +handleToggleVolume()
     }
 
     class CandlestickChart {
@@ -69,6 +71,14 @@ classDiagram
         -timeframe: Timeframe
         -overlays: SignalOverlay[]
         +onExpandNeeded()
+    }
+
+    class VolumeChart {
+        VolumeChart.tsx
+        -data: CandleData[]
+        -timeframe: Timeframe
+        -visibleLogicalRange: LogicalRange
+        +formatVolume(v) string
     }
 
     class SignalConfigPanel {
@@ -96,5 +106,6 @@ classDiagram
     JournalPage --> Header
 
     ChartPanel --> CandlestickChart
+    ChartPanel --> VolumeChart
     ChartPanel --> SignalConfigPanel
 ```

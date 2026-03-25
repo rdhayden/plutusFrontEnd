@@ -14,9 +14,10 @@ interface SearchResultsProps {
   searchQuery: string;
   isLoading: boolean;
   showTypeMore: boolean;
-  watchlistTickers: Set<string>;
+  watchlistNames: string[];
+  tickerMembership: Map<string, Set<string>>;
   onSelect: (result: TickerSearchResult) => void;
-  onAddToWatchlist: (result: TickerSearchResult) => void;
+  onAddToWatchlist: (result: TickerSearchResult, watchlistName: string) => void;
   onClose: () => void;
 }
 
@@ -25,7 +26,8 @@ export default function SearchResults({
   searchQuery,
   isLoading,
   showTypeMore,
-  watchlistTickers,
+  watchlistNames,
+  tickerMembership,
   onSelect,
   onAddToWatchlist,
   onClose,
@@ -56,9 +58,9 @@ export default function SearchResults({
     setContextMenu({ x: e.clientX, y: e.clientY, result });
   };
 
-  const handleAddToWatchlist = () => {
+  const handleAddToWatchlist = (watchlistName: string) => {
     if (contextMenu) {
-      onAddToWatchlist(contextMenu.result);
+      onAddToWatchlist(contextMenu.result, watchlistName);
       setContextMenu(null);
     }
   };
@@ -171,17 +173,30 @@ export default function SearchResults({
               <div>
                 <div
                   style={{
-                    fontWeight: 600,
-                    fontSize: "var(--body-1-size)",
-                    color: "var(--color-text-primary)",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "var(--space-s)",
                   }}
                 >
-                  {result.ticker}
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      fontSize: "var(--body-1-size)",
+                      color: "var(--color-text-primary)",
+                    }}
+                  >
+                    {result.ticker}
+                  </span>
+                  {result.exchange_name && (
+                    <span
+                      className="body-2"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
+                      {result.exchange_name}
+                    </span>
+                  )}
                 </div>
-                <div
-                  className="body-2"
-                  style={{ color: "var(--color-text-muted)" }}
-                >
+                <div className="body-2" style={{ color: "var(--color-text-muted)" }}>
                   {result.name}
                 </div>
               </div>
@@ -202,40 +217,70 @@ export default function SearchResults({
             border: "1px solid var(--color-border)",
             borderRadius: "var(--radius-m)",
             boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-            minWidth: "160px",
+            minWidth: "180px",
             overflow: "hidden",
           }}
         >
-          <button
-            onClick={handleAddToWatchlist}
-            disabled={watchlistTickers.has(contextMenu.result.ticker)}
+          {/* Submenu header */}
+          <div
             style={{
-              display: "block",
-              width: "100%",
-              padding: "10px var(--inset-m)",
-              background: "transparent",
-              border: "none",
-              cursor: watchlistTickers.has(contextMenu.result.ticker) ? "default" : "pointer",
-              textAlign: "left",
-              fontSize: "var(--body-1-size)",
-              color: watchlistTickers.has(contextMenu.result.ticker)
-                ? "var(--color-text-muted)"
-                : "var(--color-text-primary)",
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              if (!watchlistTickers.has(contextMenu.result.ticker)) {
-                e.currentTarget.style.background = "var(--color-bg-secondary)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
+              padding: "6px var(--inset-m)",
+              fontSize: "var(--body-2-size)",
+              color: "var(--color-text-muted)",
+              borderBottom: "1px solid var(--color-border)",
+              userSelect: "none",
             }}
           >
-            {watchlistTickers.has(contextMenu.result.ticker)
-              ? "Already in watchlist"
-              : "Add to watchlist"}
-          </button>
+            Add to watchlist
+          </div>
+
+          {watchlistNames.length === 0 ? (
+            <div
+              style={{
+                padding: "10px var(--inset-m)",
+                fontSize: "var(--body-1-size)",
+                color: "var(--color-text-muted)",
+                userSelect: "none",
+              }}
+            >
+              no watchlists
+            </div>
+          ) : (
+            watchlistNames.map((wlName) => {
+              const alreadyIn =
+                tickerMembership.get(contextMenu.result.ticker)?.has(wlName) ?? false;
+              return (
+                <button
+                  key={wlName}
+                  onClick={() => !alreadyIn && handleAddToWatchlist(wlName)}
+                  disabled={alreadyIn}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px var(--inset-m)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: alreadyIn ? "default" : "pointer",
+                    textAlign: "left",
+                    fontSize: "var(--body-1-size)",
+                    color: alreadyIn
+                      ? "var(--color-text-muted)"
+                      : "var(--color-text-primary)",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!alreadyIn)
+                      e.currentTarget.style.background = "var(--color-bg-secondary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  {wlName}
+                </button>
+              );
+            })
+          )}
         </div>
       )}
     </div>

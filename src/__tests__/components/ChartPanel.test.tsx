@@ -5,19 +5,21 @@ import { ChartTab, AvailableSignal } from "@/lib/types";
 
 // Mock CandlestickChart since it uses canvas/lightweight-charts
 vi.mock("@/components/CandlestickChart", () => ({
-  default: ({ data, timeframe, overlays, onExpandNeeded, onVisibleLogicalRangeChange, visibleLogicalRange }: {
+  default: ({ data, timeframe, overlays, onExpandNeeded, onVisibleLogicalRangeChange, visibleLogicalRange, drawings }: {
     data: unknown[];
     timeframe: string;
     overlays?: unknown[];
     onExpandNeeded?: () => void;
     onVisibleLogicalRangeChange?: (range: { from: number; to: number } | null) => void;
     visibleLogicalRange?: { from: number; to: number } | null;
+    drawings?: unknown[];
   }) => (
     <div
       data-testid="candlestick-chart"
       data-count={data.length}
       data-timeframe={timeframe}
       data-overlays={overlays?.length ?? 0}
+      data-drawings={drawings?.length ?? 0}
       data-has-range-callback={onVisibleLogicalRangeChange ? "true" : "false"}
       data-visible-range={visibleLogicalRange ? JSON.stringify(visibleLogicalRange) : ""}
       onClick={onExpandNeeded}
@@ -28,6 +30,13 @@ vi.mock("@/components/CandlestickChart", () => ({
         }
       }}
     />
+  ),
+}));
+
+// Mock VolumeChart since it uses canvas/lightweight-charts
+vi.mock("@/components/VolumeChart", () => ({
+  default: ({ data }: { data: unknown[] }) => (
+    <div data-testid="volume-chart" data-count={data.length} />
   ),
 }));
 
@@ -70,6 +79,7 @@ const mockSignals: AvailableSignal[] = [
 
 const defaultTabs: ChartTab[] = [
   {
+    id: "AAPL:XNAS",
     ticker: "AAPL",
     exchange: "XNAS",
     name: "Apple Inc.",
@@ -86,16 +96,19 @@ const defaultTabs: ChartTab[] = [
 
 const defaultProps = {
   tabs: defaultTabs,
-  activeTab: "AAPL",
+  activeTab: "AAPL:XNAS",
   onTabSelect: vi.fn(),
   onTimeframeChange: vi.fn(),
   onTimespanChange: vi.fn(),
   onAddSignal: vi.fn().mockResolvedValue(null),
   onAutoExpand: vi.fn(),
   onTabClose: vi.fn(),
+  onRemoveSubChart: vi.fn(),
   availableSignals: mockSignals,
   selectedSignal: "",
   onSignalChange: vi.fn(),
+  drawingsPerTab: {},
+  onDrawingsChange: vi.fn(),
 };
 
 describe("ChartPanel", () => {
@@ -112,8 +125,23 @@ describe("ChartPanel", () => {
 
   it("renders ticker tab buttons", () => {
     render(<ChartPanel {...defaultProps} />);
-    const buttons = screen.getAllByRole("button", { name: "AAPL" });
+    const buttons = screen.getAllByRole("button", { name: /^AAPL/ });
     expect(buttons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows the stock name in the tab alongside the ticker", () => {
+    render(<ChartPanel {...defaultProps} />);
+    // Both ticker and name should be visible within the tab button
+    const tabBtn = screen.getAllByRole("button", { name: /^AAPL/ })[0];
+    expect(tabBtn.textContent).toContain("AAPL");
+    expect(tabBtn.textContent).toContain("Apple Inc.");
+  });
+
+  it("does not crash when tab name is null", () => {
+    const tabsNoName: ChartTab[] = [{ ...defaultTabs[0], name: "" }];
+    render(<ChartPanel {...defaultProps} tabs={tabsNoName} />);
+    const tabBtn = screen.getAllByRole("button", { name: /^AAPL/ })[0];
+    expect(tabBtn.textContent).toContain("AAPL");
   });
 
   it("renders chart header with name and price", () => {
@@ -133,13 +161,13 @@ describe("ChartPanel", () => {
     const onTabSelect = vi.fn();
     const tabs: ChartTab[] = [
       ...defaultTabs,
-      { ticker: "MSFT", exchange: "XNAS", name: "Microsoft", data: [], lastPrice: 400, timeframe: "DAY", from: "2024-07-01", signals: [] },
+      { id: "MSFT:XNAS", ticker: "MSFT", exchange: "XNAS", name: "Microsoft", data: [], lastPrice: 400, timeframe: "DAY", from: "2024-07-01", signals: [] },
     ];
 
     render(<ChartPanel {...defaultProps} tabs={tabs} onTabSelect={onTabSelect} />);
-    const msftBtn = screen.getAllByRole("button", { name: "MSFT" })[0];
+    const msftBtn = screen.getAllByRole("button", { name: /^MSFT/ })[0];
     fireEvent.click(msftBtn);
-    expect(onTabSelect).toHaveBeenCalledWith("MSFT");
+    expect(onTabSelect).toHaveBeenCalledWith("MSFT:XNAS");
   });
 
   describe("Timespan buttons", () => {
@@ -153,14 +181,14 @@ describe("ChartPanel", () => {
       const onTimespanChange = vi.fn();
       render(<ChartPanel {...defaultProps} onTimespanChange={onTimespanChange} />);
       fireEvent.click(screen.getByLabelText("Expand timespan"));
-      expect(onTimespanChange).toHaveBeenCalledWith("AAPL", "expand");
+      expect(onTimespanChange).toHaveBeenCalledWith("AAPL:XNAS", "expand");
     });
 
     it("calls onTimespanChange with 'shrink' when - is clicked", () => {
       const onTimespanChange = vi.fn();
       render(<ChartPanel {...defaultProps} onTimespanChange={onTimespanChange} />);
       fireEvent.click(screen.getByLabelText("Shrink timespan"));
-      expect(onTimespanChange).toHaveBeenCalledWith("AAPL", "shrink");
+      expect(onTimespanChange).toHaveBeenCalledWith("AAPL:XNAS", "shrink");
     });
 
     it("does not render timespan buttons when no active chart", () => {
@@ -200,7 +228,7 @@ describe("ChartPanel", () => {
 
       const timeframeSelect = container.querySelectorAll("select")[0];
       fireEvent.change(timeframeSelect, { target: { value: "WEEK" } });
-      expect(onTimeframeChange).toHaveBeenCalledWith("AAPL", "WEEK");
+      expect(onTimeframeChange).toHaveBeenCalledWith("AAPL:XNAS", "WEEK");
     });
   });
 
@@ -315,7 +343,7 @@ describe("ChartPanel", () => {
       fireEvent.click(screen.getByTestId("config-submit"));
 
       expect(onAddSignal).toHaveBeenCalledWith(
-        "AAPL",
+        "AAPL:XNAS",
         "SimpleMovingAverage",
         [{ name: "period", value: "14" }]
       );
@@ -459,6 +487,105 @@ describe("ChartPanel", () => {
       expect(charts[1]).toHaveAttribute("data-overlays", "2");
     });
 
+    it("renders a remove button on each sub-chart", () => {
+      const tabsWithSignals: ChartTab[] = [
+        {
+          ...defaultTabs[0],
+          signals: [
+            {
+              signalName: "RSI",
+              signalHash: 456,
+              specification: [{ name: "period", value: "14" }],
+              timeSeries: [{ time: "2025-01-01", values: { rsi: 55 } }],
+              visualiseWith: [],
+            },
+          ],
+        },
+      ];
+
+      render(<ChartPanel {...defaultProps} tabs={tabsWithSignals} />);
+      expect(screen.getByLabelText("Remove RSI subchart")).toBeTruthy();
+    });
+
+    it("calls onRemoveSubChart with the correct tabId and signalHashes when the remove button is clicked", () => {
+      const onRemoveSubChart = vi.fn();
+      const tabsWithSignals: ChartTab[] = [
+        {
+          ...defaultTabs[0],
+          signals: [
+            {
+              signalName: "RSI",
+              signalHash: 456,
+              specification: [{ name: "period", value: "14" }],
+              timeSeries: [{ time: "2025-01-01", values: { rsi: 55 } }],
+              visualiseWith: [],
+            },
+          ],
+        },
+      ];
+
+      render(<ChartPanel {...defaultProps} tabs={tabsWithSignals} onRemoveSubChart={onRemoveSubChart} />);
+      fireEvent.click(screen.getByLabelText("Remove RSI subchart"));
+      expect(onRemoveSubChart).toHaveBeenCalledWith("AAPL:XNAS", [456]);
+    });
+
+    it("includes all signal hashes in the pane when calling onRemoveSubChart", () => {
+      const onRemoveSubChart = vi.fn();
+      const tabsWithSignals: ChartTab[] = [
+        {
+          ...defaultTabs[0],
+          signals: [
+            {
+              signalName: "RSI",
+              signalHash: 456,
+              specification: [{ name: "period", value: "14" }],
+              timeSeries: [{ time: "2025-01-01", values: { rsi: 55 } }],
+              visualiseWith: [],
+            },
+            {
+              signalName: "StochRSI",
+              signalHash: 789,
+              specification: [{ name: "period", value: "14" }],
+              timeSeries: [{ time: "2025-01-01", values: { stochRsi: 0.8 } }],
+              visualiseWith: ["RSI"],
+            },
+          ],
+        },
+      ];
+
+      render(<ChartPanel {...defaultProps} tabs={tabsWithSignals} onRemoveSubChart={onRemoveSubChart} />);
+      fireEvent.click(screen.getByLabelText("Remove RSI subchart"));
+      expect(onRemoveSubChart).toHaveBeenCalledWith("AAPL:XNAS", [456, 789]);
+    });
+
+    it("renders separate remove buttons for each independent sub-chart", () => {
+      const tabsWithSignals: ChartTab[] = [
+        {
+          ...defaultTabs[0],
+          signals: [
+            {
+              signalName: "RSI",
+              signalHash: 456,
+              specification: [{ name: "period", value: "14" }],
+              timeSeries: [{ time: "2025-01-01", values: { rsi: 55 } }],
+              visualiseWith: [],
+            },
+            {
+              signalName: "MACD",
+              signalHash: 101,
+              specification: [{ name: "period", value: "12" }],
+              timeSeries: [{ time: "2025-01-01", values: { macd: 1.5 } }],
+              visualiseWith: [],
+            },
+          ],
+        },
+      ];
+
+      render(<ChartPanel {...defaultProps} tabs={tabsWithSignals} />);
+      expect(screen.getByLabelText("Remove RSI subchart")).toBeTruthy();
+      expect(screen.getByLabelText("Remove MACD subchart")).toBeTruthy();
+    });
+
     it("renders multiple independent signals as separate sub-charts", () => {
       const tabsWithSignals: ChartTab[] = [
         {
@@ -529,13 +656,62 @@ describe("ChartPanel", () => {
 
       // The mock CandlestickChart wires onExpandNeeded to onClick
       fireEvent.click(screen.getByTestId("candlestick-chart"));
-      expect(onAutoExpand).toHaveBeenCalledWith("AAPL");
+      expect(onAutoExpand).toHaveBeenCalledWith("AAPL:XNAS");
     });
 
     it("does not pass onExpandNeeded when no active chart", () => {
       const onAutoExpand = vi.fn();
       render(<ChartPanel {...defaultProps} activeTab={null} tabs={[]} onAutoExpand={onAutoExpand} />);
       expect(screen.queryByTestId("candlestick-chart")).toBeNull();
+    });
+  });
+
+  describe("Drawings dropdown", () => {
+    it("renders 'Drawings:' label", () => {
+      const { container } = render(<ChartPanel {...defaultProps} />);
+      expect(container.textContent).toContain("Drawings:");
+    });
+
+    it("renders drawings select with placeholder and Horizontal Line option", () => {
+      const { container } = render(<ChartPanel {...defaultProps} />);
+      const drawingsSelect = container.querySelectorAll("select")[2];
+      expect(drawingsSelect).toBeTruthy();
+      const options = within(drawingsSelect).getAllByRole("option");
+      const labels = options.map((o) => o.textContent);
+      expect(labels).toContain("-- Select --");
+      expect(labels).toContain("Horizontal Line");
+    });
+
+    it("calls onDrawingsChange when Horizontal Line is selected", () => {
+      const onDrawingsChange = vi.fn();
+      const { container } = render(<ChartPanel {...defaultProps} onDrawingsChange={onDrawingsChange} />);
+
+      const drawingsSelect = container.querySelectorAll("select")[2];
+      fireEvent.change(drawingsSelect, { target: { value: "horizontal-line" } });
+
+      expect(onDrawingsChange).toHaveBeenCalledOnce();
+      const [tabId, drawings] = onDrawingsChange.mock.calls[0];
+      expect(tabId).toBe("AAPL:XNAS");
+      expect(drawings).toHaveLength(1);
+      expect(drawings[0]).toMatchObject({ price: expect.any(Number) });
+    });
+
+    it("renders drawings passed via drawingsPerTab prop", () => {
+      const drawings = [{ id: "hline-1", price: 100 }];
+      render(<ChartPanel {...defaultProps} drawingsPerTab={{ "AAPL:XNAS": drawings }} />);
+      const chart = screen.getAllByTestId("candlestick-chart")[0];
+      expect(chart).toHaveAttribute("data-drawings", "1");
+    });
+
+    it("does not call onDrawingsChange when no active chart", () => {
+      const onDrawingsChange = vi.fn();
+      const { container } = render(
+        <ChartPanel {...defaultProps} activeTab={null} tabs={[]} onDrawingsChange={onDrawingsChange} />
+      );
+      // No chart rendered, no crash
+      expect(screen.queryByTestId("candlestick-chart")).toBeNull();
+      expect(container.textContent).toContain("Search for a ticker to view its chart");
+      expect(onDrawingsChange).not.toHaveBeenCalled();
     });
   });
 
@@ -747,5 +923,104 @@ describe("ChartPanel", () => {
       expect(charts[0]).toHaveAttribute("data-has-range-callback", "true");
       expect(charts[0]).toHaveAttribute("data-visible-range", "");
     });
+  });
+});
+
+// ── Volume toggle tests ───────────────────────────────────────────────────────
+
+const tabWithVolume: ChartTab = {
+  id: "MSFT:XNAS",
+  ticker: "MSFT",
+  exchange: "XNAS",
+  name: "Microsoft Corp.",
+  data: [
+    { time: "2025-01-01", open: 400, high: 420, low: 390, close: 410, volume: 1_000_000 },
+    { time: "2025-01-02", open: 410, high: 430, low: 400, close: 405, volume: 800_000 },
+  ],
+  lastPrice: 405,
+  timeframe: "DAY",
+  from: "2024-07-01",
+  signals: [],
+};
+
+const tabWithoutVolume: ChartTab = {
+  id: "GOOG:XNAS",
+  ticker: "GOOG",
+  exchange: "XNAS",
+  name: "Alphabet Inc.",
+  data: [
+    { time: "2025-01-01", open: 180, high: 190, low: 170, close: 185 },
+    { time: "2025-01-02", open: 185, high: 195, low: 175, close: 180 },
+  ],
+  lastPrice: 180,
+  timeframe: "DAY",
+  from: "2024-07-01",
+  signals: [],
+};
+
+const volumeToggleProps = {
+  ...defaultProps,
+  tabs: [tabWithVolume],
+  activeTab: tabWithVolume.id,
+};
+
+describe("ChartPanel — volume toggle", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders the Vol button when the active tab has volume data", () => {
+    render(<ChartPanel {...volumeToggleProps} />);
+    expect(screen.getByRole("button", { name: /hide volume/i })).toBeTruthy();
+  });
+
+  it("does not render the Vol button when the active tab has no volume data", () => {
+    render(<ChartPanel {...defaultProps} tabs={[tabWithoutVolume]} activeTab={tabWithoutVolume.id} />);
+    expect(screen.queryByRole("button", { name: /volume/i })).toBeNull();
+  });
+
+  it("renders VolumeChart by default when tab has volume", () => {
+    render(<ChartPanel {...volumeToggleProps} />);
+    expect(screen.getByTestId("volume-chart")).toBeTruthy();
+  });
+
+  it("hides VolumeChart after clicking the Vol button", () => {
+    render(<ChartPanel {...volumeToggleProps} />);
+    fireEvent.click(screen.getByRole("button", { name: /hide volume/i }));
+    expect(screen.queryByTestId("volume-chart")).toBeNull();
+  });
+
+  it("shows VolumeChart again on second click", () => {
+    render(<ChartPanel {...volumeToggleProps} />);
+    const btn = screen.getByRole("button", { name: /hide volume/i });
+    fireEvent.click(btn);
+    fireEvent.click(screen.getByRole("button", { name: /show volume/i }));
+    expect(screen.getByTestId("volume-chart")).toBeTruthy();
+  });
+
+  it("toggle state is independent per tab", () => {
+    const twoTabProps = {
+      ...defaultProps,
+      tabs: [tabWithVolume, { ...tabWithVolume, id: "TSLA:XNAS", ticker: "TSLA" }],
+      activeTab: tabWithVolume.id,
+    };
+    const { rerender } = render(<ChartPanel {...twoTabProps} />);
+
+    // Hide volume on tab A
+    fireEvent.click(screen.getByRole("button", { name: /hide volume/i }));
+    expect(screen.queryByTestId("volume-chart")).toBeNull();
+
+    // Switch to tab B — should default to visible
+    rerender(<ChartPanel {...twoTabProps} activeTab="TSLA:XNAS" />);
+    expect(screen.getByTestId("volume-chart")).toBeTruthy();
+
+    // Switch back to tab A — should still be hidden
+    rerender(<ChartPanel {...twoTabProps} activeTab={tabWithVolume.id} />);
+    expect(screen.queryByTestId("volume-chart")).toBeNull();
+  });
+
+  it("does not render VolumeChart when tab has no volume data", () => {
+    render(<ChartPanel {...defaultProps} tabs={[tabWithoutVolume]} activeTab={tabWithoutVolume.id} />);
+    expect(screen.queryByTestId("volume-chart")).toBeNull();
   });
 });
