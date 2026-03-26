@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { ChartTab, Timeframe, TIMEFRAME_LABELS, AvailableSignal, SignalOverlay, HorizontalLineDrawing } from "@/lib/types";
 import type { LogicalRange } from "lightweight-charts";
 import CandlestickChart from "./CandlestickChart";
 import type { CrosshairSyncData } from "./CandlestickChart";
 import VolumeChart from "./VolumeChart";
 import SignalConfigPanel from "./SignalConfigPanel";
+import styles from "./ChartTabBar.module.css";
 
 interface ChartPane {
   label: string;
@@ -201,11 +202,84 @@ export default function ChartPanel({
   const [showConfigPanel, setShowConfigPanel] = useState(false);
   const [duplicateMessage, setDuplicateMessage] = useState<string | null>(null);
   const [mainChartHeight, setMainChartHeight] = useState(DEFAULT_MAIN_HEIGHT);
+
+  // Tab overflow: measure how many tabs fit at minimum width
+  const PILL_RESERVE = 44;
+  const MIN_TAB_WIDTH = 52;
+  const tabBarRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(tabs.length);
+
+  useLayoutEffect(() => {
+    const el = tabBarRef.current;
+    if (!el) return;
+    const measure = () => {
+      const width = el.clientWidth;
+      // clientWidth is 0 in JSDOM / before layout — show all tabs
+      if (width === 0) {
+        setVisibleCount(tabs.length);
+        return;
+      }
+      const totalFit = Math.floor(width / MIN_TAB_WIDTH);
+      if (tabs.length <= totalFit) {
+        setVisibleCount(tabs.length);
+      } else {
+        setVisibleCount(Math.max(1, Math.floor((width - PILL_RESERVE) / MIN_TAB_WIDTH)));
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [tabs.length]);
+
+  // Compute visible window: preserve tab order, shift so active tab is last visible slot
+  const activeIndex = Math.max(0, tabs.findIndex((t) => t.id === activeTab));
+  const windowEnd = Math.min(tabs.length, Math.max(visibleCount, activeIndex + 1));
+  const windowStart = Math.max(0, windowEnd - visibleCount);
+  const visibleTabs = tabs.slice(windowStart, windowEnd);
+  const hiddenTabs = [...tabs.slice(0, windowStart), ...tabs.slice(windowEnd)];
   const [volumeChartHeight, setVolumeChartHeight] = useState(DEFAULT_VOLUME_HEIGHT);
   const [subChartHeights, setSubChartHeights] = useState<Record<string, number>>({});
   const [sharedLogicalRange, setSharedLogicalRange] = useState<LogicalRange | null>(null);
   const [sharedCrosshairX, setSharedCrosshairX] = useState<CrosshairSyncData | null>(null);
   const [volumeVisiblePerTab, setVolumeVisiblePerTab] = useState<Record<string, boolean>>({});
+
+  // +N overflow pill dropdown
+  const pillBtnRef = useRef<HTMLButtonElement>(null);
+  const pillMenuRef = useRef<HTMLDivElement>(null);
+  const [pillOpen, setPillOpen] = useState(false);
+  const [pillPos, setPillPos] = useState({ top: 0, right: 0 });
+
+  useEffect(() => {
+    if (!pillOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        pillMenuRef.current && !pillMenuRef.current.contains(e.target as Node) &&
+        pillBtnRef.current && !pillBtnRef.current.contains(e.target as Node)
+      ) {
+        setPillOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPillOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [pillOpen]);
+
+  const handlePillClick = () => {
+    if (!pillBtnRef.current) return;
+    const rect = pillBtnRef.current.getBoundingClientRect();
+    setPillPos({ top: rect.bottom, right: window.innerWidth - rect.right });
+    setPillOpen((prev) => !prev);
+  };
+
+  const handleHiddenTabSelect = (tabId: string) => {
+    setPillOpen(false);
+    onTabSelect(tabId);
+  };
 
   const activeChart = tabs.find((t) => t.id === activeTab);
 
@@ -356,76 +430,58 @@ export default function ChartPanel({
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       {/* Ticker Tabs */}
-      <div
-        style={{
-          minHeight: "48px",
-          borderBottom: "1px solid var(--color-border)",
-          display: "flex",
-          alignItems: "stretch",
-          padding: "0 var(--inset-s)",
-          gap: 0,
-          background: "var(--color-bg-secondary)",
-        }}
-      >
-        {tabs.map((tab) => (
+      <div className={styles.tabBar} ref={tabBarRef}>
+        {visibleTabs.map((tab) => (
           <div
             key={tab.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              borderBottom:
-                tab.id === activeTab
-                  ? "2px solid var(--color-primary)"
-                  : "2px solid transparent",
-              marginBottom: "-1px",
-            }}
+            className={`${styles.tab}${tab.id === activeTab ? ` ${styles.tabActive}` : ""}`}
           >
             <button
               onClick={() => onTabSelect(tab.id)}
-              style={{
-                padding: "var(--inset-xs) var(--space-xs) var(--inset-xs) var(--inset-s)",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                textAlign: "left",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                color:
-                  tab.id === activeTab
-                    ? "var(--color-primary)"
-                    : "var(--color-text-secondary)",
-                transition: "color 0.15s",
-              }}
+              className={`${styles.tabBtn}${tab.id === activeTab ? ` ${styles.tabBtnActive}` : ""}`}
             >
-              <span style={{ fontWeight: tab.id === activeTab ? 600 : 400, fontSize: "var(--body-1-size)", lineHeight: 1.2 }}>
+              <span className={`${styles.ticker}${tab.id === activeTab ? ` ${styles.tickerActive}` : ""}`}>
                 {tab.ticker}
               </span>
-              {tab.name && (
-                <span style={{ fontSize: "11px", fontWeight: 400, lineHeight: 1.2, color: "var(--color-text-muted)", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {tab.name}
-                </span>
-              )}
             </button>
             <button
               aria-label={`Close ${tab.ticker}`}
               onClick={(e) => { e.stopPropagation(); onTabClose(tab.id); }}
-              style={{
-                padding: "0 var(--inset-xs) 0 0",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                color: "var(--color-text-muted)",
-                fontSize: "14px",
-                lineHeight: 1,
-                display: "flex",
-                alignItems: "center",
-              }}
+              className={styles.closeBtn}
             >
               ×
             </button>
           </div>
         ))}
+        {hiddenTabs.length > 0 && (
+          <>
+            <button
+              ref={pillBtnRef}
+              className={styles.pill}
+              onClick={handlePillClick}
+              aria-label={`${hiddenTabs.length} more tabs`}
+            >
+              +{hiddenTabs.length}
+            </button>
+            {pillOpen && (
+              <div
+                ref={pillMenuRef}
+                className={styles.pillDropdown}
+                style={{ top: pillPos.top, right: pillPos.right }}
+              >
+                {hiddenTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={styles.pillDropdownItem}
+                    onClick={() => handleHiddenTabSelect(tab.id)}
+                  >
+                    {tab.ticker}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Chart Header */}

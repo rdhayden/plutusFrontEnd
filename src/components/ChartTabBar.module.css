@@ -1,0 +1,139 @@
+/* Tab bar container */
+.tabBar {
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: stretch;
+  padding: 0 var(--inset-s);
+  gap: 0;
+  background: var(--color-bg-secondary);
+}
+
+/* Individual tab wrapper — holds the tab button and close button */
+.tab {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  flex: 1 1 0;
+  min-width: 52px;
+  overflow: hidden;
+  transition: flex-grow 0.15s ease;
+}
+
+/* When any tab is hovered, shrink all others and expand the hovered one */
+.tabBar:has(.tab:hover) .tab:not(:hover) {
+  flex-grow: 0.3;
+}
+
+.tab:hover {
+  flex: 0 0 max-content;
+  overflow: visible;
+  transition: none;
+}
+
+.tabActive {
+  border-bottom-color: var(--color-primary);
+}
+
+/* Clickable area inside each tab */
+.tabBtn {
+  padding: var(--inset-xs) var(--space-xs) var(--inset-xs) var(--inset-s);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: color 0.15s;
+}
+
+.tabBtnActive {
+  color: var(--color-primary);
+}
+
+/* Ticker symbol span */
+.ticker {
+  font-size: var(--body-1-size);
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tickerActive {
+  font-weight: 600;
+}
+
+/* Close button — hidden by default, shown on tab hover */
+.closeBtn {
+  display: none;
+  padding: 0 var(--inset-xs) 0 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tab:hover .closeBtn {
+  display: flex;
+}
+
+/* +N overflow pill — fixed width, never shrinks */
+.pill {
+  flex-shrink: 0;
+  align-self: center;
+  height: 28px;
+  min-width: 44px;
+  padding: 0 var(--inset-xs);
+  margin-left: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pill:hover {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+/* Overflow pill dropdown */
+.pillDropdown {
+  position: fixed;
+  z-index: 100;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.pillDropdownItem {
+  display: block;
+  width: 100%;
+  padding: 10px var(--inset-m);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  transition: background 0.15s;
+}
+
+.pillDropdownItem:hover {
+  background: var(--color-bg-secondary);
+}

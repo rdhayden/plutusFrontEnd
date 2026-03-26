@@ -146,7 +146,7 @@ export default function SearchResults({
         {!showTypeMore &&
           results.map((result) => (
             <button
-              key={result.ticker}
+              key={result.exchange ? `${result.ticker}:${result.exchange}` : result.ticker}
               onClick={() => onSelect(result)}
               onContextMenu={(e) => handleContextMenu(e, result)}
               style={{

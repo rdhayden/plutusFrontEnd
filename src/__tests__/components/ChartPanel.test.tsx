@@ -129,12 +129,12 @@ describe("ChartPanel", () => {
     expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("shows the stock name in the tab alongside the ticker", () => {
+  it("shows only the ticker in the tab (company name is not displayed)", () => {
     render(<ChartPanel {...defaultProps} />);
-    // Both ticker and name should be visible within the tab button
+    // Company name is intentionally hidden — only ticker symbol appears
     const tabBtn = screen.getAllByRole("button", { name: /^AAPL/ })[0];
     expect(tabBtn.textContent).toContain("AAPL");
-    expect(tabBtn.textContent).toContain("Apple Inc.");
+    expect(tabBtn.textContent).not.toContain("Apple Inc.");
   });
 
   it("does not crash when tab name is null", () => {
