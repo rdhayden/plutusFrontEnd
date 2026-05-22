@@ -1,0 +1,75 @@
+/* [project]/src/components/NotesPanel.module.css [app-client] (css) */
+.NotesPanel-module__klo9CG__panel {
+  z-index: 1000;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  flex-direction: column;
+  width: 280px;
+  display: flex;
+  position: fixed;
+  overflow: hidden;
+  box-shadow: 0 4px 16px #0000001f;
+}
+
+.NotesPanel-module__klo9CG__header {
+  padding: var(--inset-xs) var(--inset-s);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__title {
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.NotesPanel-module__klo9CG__closeBtn {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  align-items: center;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__textarea {
+  resize: none;
+  padding: var(--inset-s);
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  border: none;
+  outline: none;
+  flex: 1;
+  height: 130px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.NotesPanel-module__klo9CG__footer {
+  padding: var(--inset-xs) var(--inset-s);
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  background: var(--color-bg-secondary);
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__btnDelete {
+  padding: 4px var(--inset-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+  background: none;
+}
+
+/*# sourceMappingURL=src_components_NotesPanel_module_css_bad6b30c._.single.css.map*/

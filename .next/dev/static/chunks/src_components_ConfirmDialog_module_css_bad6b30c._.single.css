@@ -1,0 +1,57 @@
+/* [project]/src/components/ConfirmDialog.module.css [app-client] (css) */
+.ConfirmDialog-module__dLTK2q__backdrop {
+  z-index: 1000;
+  background: #0006;
+  position: fixed;
+  inset: 0;
+}
+
+.ConfirmDialog-module__dLTK2q__dialog {
+  z-index: 1001;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  width: 320px;
+  padding: var(--inset-m);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 24px #0003;
+}
+
+.ConfirmDialog-module__dLTK2q__message {
+  margin: 0 0 var(--inset-m) 0;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.ConfirmDialog-module__dLTK2q__footer {
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  display: flex;
+}
+
+.ConfirmDialog-module__dLTK2q__btnCancel {
+  padding: var(--inset-xs) var(--inset-m);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: none;
+}
+
+.ConfirmDialog-module__dLTK2q__btnConfirm {
+  padding: var(--inset-xs) var(--inset-m);
+  border: 1px solid var(--color-negative);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+  background: none;
+  font-weight: 600;
+}
+
+/*# sourceMappingURL=src_components_ConfirmDialog_module_css_bad6b30c._.single.css.map*/

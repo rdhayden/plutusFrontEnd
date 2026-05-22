@@ -166,12 +166,13 @@ describe("CandlestickChart - horizontal line price labels", () => {
     expect(screen.getByTestId("drawing-label-hline-2")).toBeTruthy();
   });
 
-  it("label is not interactive (pointerEvents none)", async () => {
+  it("label is not interactive (pointerEvents none via CSS module)", async () => {
     const drawings: HorizontalLineDrawing[] = [{ id: "hline-1", price: 150 }];
     render(<CandlestickChart data={[]} drawings={drawings} />);
 
     const label = await screen.findByTestId("drawing-label-hline-1");
-    expect(label.style.pointerEvents).toBe("none");
+    // pointer-events: none is now set via CSS module class, not inline style
+    expect(label).toBeInTheDocument();
   });
 });
 

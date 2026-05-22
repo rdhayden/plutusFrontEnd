@@ -1,0 +1,23 @@
+.wrapper {
+  padding: var(--inset-s);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-m);
+  padding: 0 12px;
+  height: 36px;
+}
+
+.input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+}

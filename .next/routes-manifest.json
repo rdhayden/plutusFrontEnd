@@ -1,0 +1,151 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/watchlist/[ticker]",
+      "regex": "^/api/watchlist/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPticker": "nxtPticker"
+      },
+      "namedRegex": "^/api/watchlist/(?<nxtPticker>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/watchlists/[name]",
+      "regex": "^/api/watchlists/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPname": "nxtPname"
+      },
+      "namedRegex": "^/api/watchlists/(?<nxtPname>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/chart-state",
+      "regex": "^/api/chart\\-state(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/chart\\-state(?:/)?$"
+    },
+    {
+      "page": "/api/signals",
+      "regex": "^/api/signals(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/signals(?:/)?$"
+    },
+    {
+      "page": "/api/signals/available",
+      "regex": "^/api/signals/available(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/signals/available(?:/)?$"
+    },
+    {
+      "page": "/api/signals/callback",
+      "regex": "^/api/signals/callback(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/signals/callback(?:/)?$"
+    },
+    {
+      "page": "/api/tickers/search",
+      "regex": "^/api/tickers/search(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/tickers/search(?:/)?$"
+    },
+    {
+      "page": "/api/watchlist",
+      "regex": "^/api/watchlist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/watchlist(?:/)?$"
+    },
+    {
+      "page": "/api/watchlists",
+      "regex": "^/api/watchlists(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/watchlists(?:/)?$"
+    },
+    {
+      "page": "/api/watchlists/all",
+      "regex": "^/api/watchlists/all(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/watchlists/all(?:/)?$"
+    },
+    {
+      "page": "/api/watchlists/reorder",
+      "regex": "^/api/watchlists/reorder(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/watchlists/reorder(?:/)?$"
+    },
+    {
+      "page": "/backtest",
+      "regex": "^/backtest(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/backtest(?:/)?$"
+    },
+    {
+      "page": "/journal",
+      "regex": "^/journal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/journal(?:/)?$"
+    },
+    {
+      "page": "/scanner",
+      "regex": "^/scanner(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/scanner(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

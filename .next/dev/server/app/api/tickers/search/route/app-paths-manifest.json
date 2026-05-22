@@ -1,0 +1,3 @@
+{
+  "/api/tickers/search/route": "app/api/tickers/search/route.js"
+}

@@ -66,6 +66,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Coerce specification values to proper types so the backend receives
+  // integers/floats instead of strings for numeric parameters.
+  const coercedSpec = (specification as Array<{ name: string; value: string }>).map(
+    (spec) => {
+      if (parameterTypes) {
+        const paramDef = parameterTypes.find(
+          (p: { name: string; value: string }) => p.name === spec.name
+        );
+        if (paramDef?.value === "INTEGER") {
+          return { name: spec.name, value: parseInt(spec.value, 10) };
+        }
+        if (paramDef?.value === "FLOAT") {
+          return { name: spec.name, value: parseFloat(spec.value) };
+        }
+      }
+      return { name: spec.name, value: spec.value };
+    }
+  );
+
   const signalRequestId = `${signalName}-${Date.now()}`;
   const signalRequestsId = `batch-${signalRequestId}`;
 
@@ -97,7 +116,7 @@ export async function POST(request: NextRequest) {
         {
           signalRequestId: signalRequestId,
           signalName: signalName,
-          specification: specification,
+          specification: coercedSpec,
         },
       ],
     },

@@ -5,6 +5,7 @@ import { createChart, HistogramSeries, LineSeries, ISeriesApi, LogicalRange, Tim
 import type { MouseEventParams } from "lightweight-charts";
 import { CandleData, Timeframe } from "@/lib/types";
 import type { CrosshairSyncData } from "./CandlestickChart";
+import styles from "./VolumeChart.module.css";
 
 /** Fixed right price scale width — must match CandlestickChart so time axes align. */
 const PRICE_SCALE_MIN_WIDTH = 80;
@@ -215,42 +216,10 @@ export default function VolumeChart({
   }, [crosshairXFraction]);
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
-      <div
-        ref={syncLineRef}
-        style={{
-          display: "none",
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          width: 0,
-          borderLeft: "1px dashed hsl(215, 80%, 40%)",
-          pointerEvents: "none",
-          zIndex: 10,
-        }}
-      />
-      <div
-        ref={tooltipRef}
-        style={{
-          display: "none",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          zIndex: 20,
-          pointerEvents: "none",
-          minWidth: "100px",
-          maxWidth: "140px",
-          padding: "8px 10px",
-          borderRadius: "6px",
-          fontSize: "12px",
-          lineHeight: "1.5",
-          fontFamily: "Inter, system-ui, sans-serif",
-          background: "hsla(220, 13%, 18%, 0.92)",
-          color: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        }}
-      />
+    <div className={styles.chartWrapper}>
+      <div ref={containerRef} className={styles.chartContainer} />
+      <div ref={syncLineRef} className={styles.syncLine} />
+      <div ref={tooltipRef} className={styles.tooltip} data-testid="volume-tooltip" />
     </div>
   );
 }

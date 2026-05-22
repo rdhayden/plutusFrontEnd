@@ -1,0 +1,19 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/chart-state/route": "/api/chart-state",
+  "/api/signals/available/route": "/api/signals/available",
+  "/api/signals/callback/route": "/api/signals/callback",
+  "/api/signals/route": "/api/signals",
+  "/api/tickers/search/route": "/api/tickers/search",
+  "/api/watchlist/[ticker]/route": "/api/watchlist/[ticker]",
+  "/api/watchlist/route": "/api/watchlist",
+  "/api/watchlists/[name]/route": "/api/watchlists/[name]",
+  "/api/watchlists/all/route": "/api/watchlists/all",
+  "/api/watchlists/reorder/route": "/api/watchlists/reorder",
+  "/api/watchlists/route": "/api/watchlists",
+  "/backtest/page": "/backtest",
+  "/journal/page": "/journal",
+  "/page": "/",
+  "/scanner/page": "/scanner"
+}

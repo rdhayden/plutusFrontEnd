@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { TickerSearchResult } from "@/lib/types";
+import styles from "./SearchResults.module.css";
 
 interface ContextMenuState {
   x: number;
@@ -66,33 +67,11 @@ export default function SearchResults({
   };
 
   return (
-    <div
-      style={{
-        width: "280px",
-        borderLeft: "1px solid var(--color-border)",
-        borderRight: "1px solid var(--color-border)",
-        background: "var(--color-bg)",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "var(--inset-s)",
-          borderBottom: "1px solid var(--color-border)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
+    <div className={styles.container}>
+      <div className={styles.header}>
         <div>
           <div className="heading-3">Search Results</div>
-          <div
-            className="body-2"
-            style={{ color: "var(--color-text-muted)", marginTop: "2px" }}
-          >
+          <div className={`body-2 ${styles.subheading}`}>
             {showTypeMore
               ? "Type another character"
               : isLoading
@@ -100,20 +79,7 @@ export default function SearchResults({
                 : `${results.length} result${results.length !== 1 ? "s" : ""} for "${searchQuery}"`}
           </div>
         </div>
-        <button
-          onClick={onClose}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-            borderRadius: "var(--radius-s)",
-            color: "var(--color-text-muted)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <button onClick={onClose} className={styles.closeBtn}>
           <svg
             width="16"
             height="16"
@@ -130,75 +96,26 @@ export default function SearchResults({
         </button>
       </div>
 
-      <div style={{ flex: 1, overflow: "auto" }}>
-        {showTypeMore && (
-          <div
-            style={{
-              padding: "var(--inset-l) var(--inset-s)",
-              textAlign: "center",
-              color: "var(--color-text-muted)",
-              fontSize: "var(--body-2-size)",
-            }}
-          >
-            Type another character
-          </div>
-        )}
+      <div className={styles.list}>
+        {showTypeMore && <div className={styles.emptyMsg}>Type another character</div>}
         {!showTypeMore &&
           results.map((result) => (
             <button
               key={result.exchange ? `${result.ticker}:${result.exchange}` : result.ticker}
               onClick={() => onSelect(result)}
               onContextMenu={(e) => handleContextMenu(e, result)}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "calc(100% - 16px)",
-                padding: "12px",
-                margin: "var(--inset-xs)",
-                background: "transparent",
-                border: "none",
-                borderRadius: "var(--radius-m)",
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "var(--color-bg-secondary)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "transparent")
-              }
+              className={styles.resultBtn}
             >
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: "var(--space-s)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: "var(--body-1-size)",
-                      color: "var(--color-text-primary)",
-                    }}
-                  >
-                    {result.ticker}
-                  </span>
+                <div className={styles.resultMeta}>
+                  <span className={styles.ticker}>{result.ticker}</span>
                   {result.exchange_name && (
-                    <span
-                      className="body-2"
-                      style={{ color: "var(--color-text-muted)" }}
-                    >
+                    <span className={`body-2 ${styles.exchangeName}`}>
                       {result.exchange_name}
                     </span>
                   )}
                 </div>
-                <div className="body-2" style={{ color: "var(--color-text-muted)" }}>
-                  {result.name}
-                </div>
+                <div className={`body-2 ${styles.resultName}`}>{result.name}</div>
               </div>
             </button>
           ))}
@@ -208,43 +125,14 @@ export default function SearchResults({
       {contextMenu && (
         <div
           ref={contextMenuRef}
-          style={{
-            position: "fixed",
-            top: contextMenu.y,
-            left: contextMenu.x,
-            zIndex: 1000,
-            background: "var(--color-bg)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-m)",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-            minWidth: "180px",
-            overflow: "hidden",
-          }}
+          className={styles.contextMenu}
+          style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           {/* Submenu header */}
-          <div
-            style={{
-              padding: "6px var(--inset-m)",
-              fontSize: "var(--body-2-size)",
-              color: "var(--color-text-muted)",
-              borderBottom: "1px solid var(--color-border)",
-              userSelect: "none",
-            }}
-          >
-            Add to watchlist
-          </div>
+          <div className={styles.contextMenuHeader}>Add to watchlist</div>
 
           {watchlistNames.length === 0 ? (
-            <div
-              style={{
-                padding: "10px var(--inset-m)",
-                fontSize: "var(--body-1-size)",
-                color: "var(--color-text-muted)",
-                userSelect: "none",
-              }}
-            >
-              no watchlists
-            </div>
+            <div className={styles.contextMenuEmpty}>no watchlists</div>
           ) : (
             watchlistNames.map((wlName) => {
               const alreadyIn =
@@ -254,27 +142,7 @@ export default function SearchResults({
                   key={wlName}
                   onClick={() => !alreadyIn && handleAddToWatchlist(wlName)}
                   disabled={alreadyIn}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    padding: "10px var(--inset-m)",
-                    background: "transparent",
-                    border: "none",
-                    cursor: alreadyIn ? "default" : "pointer",
-                    textAlign: "left",
-                    fontSize: "var(--body-1-size)",
-                    color: alreadyIn
-                      ? "var(--color-text-muted)"
-                      : "var(--color-text-primary)",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!alreadyIn)
-                      e.currentTarget.style.background = "var(--color-bg-secondary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                  }}
+                  className={`${styles.contextMenuItem}${alreadyIn ? ` ${styles.contextMenuItemDisabled}` : ""}`}
                 >
                   {wlName}
                 </button>

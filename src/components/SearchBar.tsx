@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import styles from "./SearchBar.module.css";
 
 interface SearchBarProps {
   value: string;
@@ -23,23 +24,8 @@ export default function SearchBar({ value, onChange, onFocus }: SearchBarProps) 
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "var(--inset-s)",
-        borderBottom: "1px solid var(--color-border)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--space-xs)",
-          background: "var(--color-bg-secondary)",
-          borderRadius: "var(--radius-m)",
-          padding: "0 12px",
-          height: "36px",
-        }}
-      >
+    <div className={styles.wrapper}>
+      <div className={styles.inputRow}>
         <svg
           width="16"
           height="16"
@@ -60,14 +46,7 @@ export default function SearchBar({ value, onChange, onFocus }: SearchBarProps) 
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
           placeholder="Search symbols..."
-          style={{
-            border: "none",
-            background: "transparent",
-            outline: "none",
-            flex: 1,
-            fontSize: "var(--body-2-size)",
-            color: "var(--color-text-primary)",
-          }}
+          className={styles.input}
         />
       </div>
     </div>

@@ -1,0 +1,179 @@
+/* [project]/src/components/ChartPanel.module.css [app-client] (css) */
+.ChartPanel-module__Iw_owG__emptyState {
+  color: var(--color-text-muted);
+  font-size: var(--body-1-size);
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__panelRoot {
+  flex-direction: column;
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.ChartPanel-module__Iw_owG__chartHeader {
+  padding: var(--inset-s) var(--inset-m);
+  border-bottom: 1px solid var(--color-border-light);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__chartHeaderSubtitle {
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.ChartPanel-module__Iw_owG__chartControls {
+  gap: var(--space-s);
+  align-items: center;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__iconBtn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-bg);
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__volumeBtn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  background: var(--color-bg);
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__volumeBtnActive {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.ChartPanel-module__Iw_owG__controlGroup {
+  align-items: center;
+  gap: var(--space-xs);
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__controlLabel {
+  color: var(--color-text-secondary);
+}
+
+.ChartPanel-module__Iw_owG__select {
+  padding: var(--inset-xs) 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+.ChartPanel-module__Iw_owG__chartScrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ChartPanel-module__Iw_owG__mainChartWrapper {
+  padding: var(--inset-m);
+  overflow: hidden;
+}
+
+.ChartPanel-module__Iw_owG__volumeWrapper {
+  padding: 0 var(--inset-m) var(--inset-m);
+  overflow: hidden;
+}
+
+.ChartPanel-module__Iw_owG__subChartLabel {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.ChartPanel-module__Iw_owG__subChartSection {
+  margin-top: var(--space-m);
+}
+
+.ChartPanel-module__Iw_owG__subChartWrapper {
+  padding: 0 var(--inset-m) var(--inset-m);
+  overflow: hidden;
+}
+
+.ChartPanel-module__Iw_owG__subChartHeader {
+  padding: var(--inset-xs) 0;
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__subChartRemoveBtn {
+  padding: 0 var(--inset-xs);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+}
+
+.ChartPanel-module__Iw_owG__bottomSpacer {
+  height: var(--space-xl);
+  flex-shrink: 0;
+}
+
+.ChartPanel-module__Iw_owG__resizeDivider {
+  cursor: row-resize;
+  z-index: 10;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  height: 12px;
+  display: flex;
+  position: relative;
+}
+
+.ChartPanel-module__Iw_owG__resizeDividerLine {
+  background: var(--color-border);
+  width: 100%;
+  height: 1px;
+}
+
+.ChartPanel-module__Iw_owG__resizeDividerHandle {
+  background: var(--color-border);
+  border-radius: 2px;
+  width: 40px;
+  height: 4px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/*# sourceMappingURL=src_components_ChartPanel_module_css_bad6b30c._.single.css.map*/

@@ -10,13 +10,13 @@ vi.mock("next/link", () => ({
   default: ({
     children,
     href,
-    style,
+    className,
   }: {
     children: React.ReactNode;
     href: string;
-    style?: React.CSSProperties;
+    className?: string;
   }) => (
-    <a href={href} style={style}>
+    <a href={href} className={className}>
       {children}
     </a>
   ),
@@ -52,7 +52,8 @@ describe("Header", () => {
     vi.mocked(usePathname).mockReturnValue("/");
     render(<Header />);
     const chartsLink = screen.getAllByText("Charts")[0].closest("a");
-    expect(chartsLink?.style.color).toContain("var(--color-primary)");
+    // active state is now a CSS module class, not an inline style
+    expect(chartsLink?.className).toContain("navLinkActive");
   });
 
   it("highlights Back Test as active when pathname is /backtest", () => {
@@ -61,9 +62,9 @@ describe("Header", () => {
 
     const links = container.querySelectorAll("a");
     const btLink = Array.from(links).find((a) => a.textContent?.includes("Back Test"));
-    expect(btLink?.style.color).toContain("var(--color-primary)");
+    expect(btLink?.className).toContain("navLinkActive");
 
     const chartsLink = Array.from(links).find((a) => a.textContent?.includes("Charts"));
-    expect(chartsLink?.style.color).toContain("var(--color-text-secondary)");
+    expect(chartsLink?.className).not.toContain("navLinkActive");
   });
 });

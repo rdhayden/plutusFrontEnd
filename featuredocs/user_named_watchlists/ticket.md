@@ -1,4 +1,4 @@
-# Add eodhd.com as a data provider
+# Add named user watchlists
 
 ## Problem to solve
 The UI currently has a single Watchlist panel that the use can add tickers to. However the user may want to add multiple watchlists for different purposes. For example they may want a Watchlist for tickers they currently hold as investments, and a watchlist for tickers they are interested in buying in future.

@@ -1,0 +1,10 @@
+{
+  "/api/chart-state/route": "app/api/chart-state/route.js",
+  "/api/signals/available/route": "app/api/signals/available/route.js",
+  "/api/signals/callback/route": "app/api/signals/callback/route.js",
+  "/api/signals/route": "app/api/signals/route.js",
+  "/api/watchlists/all/route": "app/api/watchlists/all/route.js",
+  "/backtest/page": "app/backtest/page.js",
+  "/journal/page": "app/journal/page.js",
+  "/page": "app/page.js"
+}

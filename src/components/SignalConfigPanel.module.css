@@ -1,0 +1,75 @@
+.panel {
+  padding: var(--inset-m);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-s);
+}
+
+.closeBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  padding: 2px 6px;
+}
+
+.form {
+  display: flex;
+  gap: var(--space-s);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.fieldInput {
+  padding: var(--inset-xs) 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  width: 140px;
+}
+
+.fieldInputError {
+  border-color: var(--color-red-60);
+}
+
+.fieldError {
+  color: var(--color-red-60);
+  font-size: 11px;
+}
+
+.btnSubmit {
+  padding: var(--inset-xs) var(--inset-s);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: #fff;
+  background: var(--color-primary);
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.duplicateMsg {
+  margin-top: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

@@ -41,6 +41,7 @@ export const TIMEFRAME_LABELS: Record<Timeframe, string> = {
 export interface SignalParameter {
   name: string;
   value: string;
+  default?: string | number | null;
 }
 
 export interface AvailableSignal {

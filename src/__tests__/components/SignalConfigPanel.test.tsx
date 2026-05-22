@@ -5,7 +5,7 @@ import { AvailableSignal } from "@/lib/types";
 
 const smaSignal: AvailableSignal = {
   name: "SimpleMovingAverage",
-  parameters: [{ name: "period", value: "INTEGER" }],
+  parameters: [{ name: "period", value: "INTEGER", default: null }],
   visualiseWith: ["PriceSignal"],
 };
 
@@ -216,6 +216,58 @@ describe("SignalConfigPanel", () => {
 
     const exchangeInput = screen.getByLabelText("exchange") as HTMLInputElement;
     expect(exchangeInput.value).toBe("");
+  });
+
+  it("pre-fills parameter with default value from availableSignals", () => {
+    const signalWithDefault: AvailableSignal = {
+      name: "SimpleMovingAverage",
+      parameters: [{ name: "period", value: "INTEGER", default: 20 }],
+      visualiseWith: ["PriceSignal"],
+    };
+    render(<SignalConfigPanel {...defaultProps} signal={signalWithDefault} />);
+
+    const periodInput = screen.getByLabelText("period") as HTMLInputElement;
+    expect(periodInput.value).toBe("20");
+  });
+
+  it("pre-fills string parameter with string default value", () => {
+    const signalWithStringDefault: AvailableSignal = {
+      name: "TestSignal",
+      parameters: [{ name: "source", value: "STRING", default: "close" }],
+      visualiseWith: [],
+    };
+    render(<SignalConfigPanel {...defaultProps} signal={signalWithStringDefault} />);
+
+    const sourceInput = screen.getByLabelText("source") as HTMLInputElement;
+    expect(sourceInput.value).toBe("close");
+  });
+
+  it("leaves parameter empty when default is null", () => {
+    const signalWithNullDefault: AvailableSignal = {
+      name: "SimpleMovingAverage",
+      parameters: [{ name: "period", value: "INTEGER", default: null }],
+      visualiseWith: ["PriceSignal"],
+    };
+    render(<SignalConfigPanel {...defaultProps} signal={signalWithNullDefault} />);
+
+    const periodInput = screen.getByLabelText("period") as HTMLInputElement;
+    expect(periodInput.value).toBe("");
+  });
+
+  it("submits pre-filled default value without user changes", () => {
+    const onSubmit = vi.fn();
+    const signalWithDefault: AvailableSignal = {
+      name: "SimpleMovingAverage",
+      parameters: [{ name: "period", value: "INTEGER", default: 20 }],
+      visualiseWith: ["PriceSignal"],
+    };
+    render(<SignalConfigPanel {...defaultProps} signal={signalWithDefault} onSubmit={onSubmit} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Signal" }));
+
+    expect(onSubmit).toHaveBeenCalledWith("SimpleMovingAverage", [
+      { name: "period", value: "20" },
+    ]);
   });
 
   it("submits pre-filled ticker value without user changes", () => {

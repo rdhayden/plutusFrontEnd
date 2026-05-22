@@ -145,6 +145,7 @@ export default function Home() {
         const updatedSignals = await Promise.all(
           tab.signals.map(async (signal) => {
             try {
+              const signalDef = availableSignals.find((s) => s.name === signal.signalName);
               const sigRes = await fetch("/api/signals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -156,6 +157,7 @@ export default function Home() {
                   from: tab.from,
                   to: toDate,
                   timeframe: tab.timeframe,
+                  parameterTypes: signalDef?.parameters,
                   liveMode,
                 }),
               });
@@ -445,6 +447,7 @@ export default function Home() {
         const updatedSignals = await Promise.all(
           tab.signals.map(async (signal) => {
             try {
+              const signalDef = availableSignals.find((s) => s.name === signal.signalName);
               const sigRes = await fetch("/api/signals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -456,6 +459,7 @@ export default function Home() {
                   from: fromStr,
                   to: toStr,
                   timeframe,
+                  parameterTypes: signalDef?.parameters,
                   liveMode,
                 }),
               });
@@ -483,7 +487,7 @@ export default function Home() {
         console.error("Failed to fetch chart data for timeframe change");
       }
     },
-    [chartTabs, liveMode, scheduleStateSave]
+    [chartTabs, availableSignals, liveMode, scheduleStateSave]
   );
 
   const handleTimespanChange = useCallback(
@@ -551,6 +555,7 @@ export default function Home() {
         const updatedSignals = await Promise.all(
           tab.signals.map(async (signal) => {
             try {
+              const signalDef = availableSignals.find((s) => s.name === signal.signalName);
               const sigRes = await fetch("/api/signals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -562,6 +567,7 @@ export default function Home() {
                   from: newFromStr,
                   to: toDate,
                   timeframe: tab.timeframe,
+                  parameterTypes: signalDef?.parameters,
                   liveMode,
                 }),
               });
@@ -589,7 +595,7 @@ export default function Home() {
         console.error("Failed to fetch chart data for timespan change");
       }
     },
-    [chartTabs, liveMode, scheduleStateSave]
+    [chartTabs, availableSignals, liveMode, scheduleStateSave]
   );
 
   const handleAutoExpand = useCallback(
@@ -629,6 +635,7 @@ export default function Home() {
         const updatedSignals = await Promise.all(
           tab.signals.map(async (signal) => {
             try {
+              const signalDef = availableSignals.find((s) => s.name === signal.signalName);
               const res = await fetch("/api/signals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -640,6 +647,7 @@ export default function Home() {
                   from: newFromStr,
                   to: toDate,
                   timeframe: tab.timeframe,
+                  parameterTypes: signalDef?.parameters,
                   liveMode,
                 }),
               });
@@ -667,7 +675,7 @@ export default function Home() {
         console.error("Failed to auto-expand chart data");
       }
     },
-    [chartTabs, liveMode, scheduleStateSave]
+    [chartTabs, availableSignals, liveMode, scheduleStateSave]
   );
 
   const handleAddSignal = useCallback(

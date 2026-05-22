@@ -1,0 +1,118 @@
+.chartWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.chartContainer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Sync line — left position managed by JS via ref */
+.syncLine {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed hsl(215, 80%, 40%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.syncLabel {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(215, 80%, 40%);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Drawing hit area — top is set inline (JS computed from y position) */
+.drawingHandle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 13px;
+  cursor: ns-resize;
+  z-index: 30;
+}
+
+.drawingLine {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #000;
+  pointer-events: none;
+}
+
+/* Drawing price label — right is set inline (derived from PRICE_SCALE_MIN_WIDTH constant) */
+.drawingLabel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: hsla(220, 13%, 18%, 0.92);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Context menu for drawings — top/left set inline (JS computed from mouse coords) */
+.contextMenu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.contextMenuItem {
+  display: block;
+  width: 100%;
+  padding: var(--inset-xs) var(--inset-s);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--body-2-size);
+  color: var(--color-red-60);
+}
+
+.contextMenuItem:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* Tooltip — top/left managed by JS via ref */
+.tooltip {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  pointer-events: none;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-family: Inter, system-ui, sans-serif;
+  background: hsla(220, 13%, 18%, 0.92);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}

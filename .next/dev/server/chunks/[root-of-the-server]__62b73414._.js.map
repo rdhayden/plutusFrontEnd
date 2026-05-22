@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["file:///home/robin/plutusFrontEnd/src/app/api/tickers/search/route.ts"],"sourcesContent":["import { NextRequest, NextResponse } from \"next/server\";\n\nconst TICKER_SEARCH_URL = process.env.TICKER_SEARCH_URL ?? \"http://localhost:4001/tickers/search\";\n\nexport async function GET(request: NextRequest) {\n  const prefix = request.nextUrl.searchParams.get(\"prefix\");\n  if (!prefix) {\n    return NextResponse.json([], { status: 400 });\n  }\n\n  const url = `${TICKER_SEARCH_URL}?prefix=${encodeURIComponent(prefix)}`;\n  const res = await fetch(url);\n  const data = await res.json();\n\n  return NextResponse.json(data);\n}\n"],"names":[],"mappings":";;;;AAAA;;AAEA,MAAM,oBAAoB,QAAQ,GAAG,CAAC,iBAAiB,IAAI;AAEpD,eAAe,IAAI,OAAoB;IAC5C,MAAM,SAAS,QAAQ,OAAO,CAAC,YAAY,CAAC,GAAG,CAAC;IAChD,IAAI,CAAC,QAAQ;QACX,OAAO,gJAAY,CAAC,IAAI,CAAC,EAAE,EAAE;YAAE,QAAQ;QAAI;IAC7C;IAEA,MAAM,MAAM,GAAG,kBAAkB,QAAQ,EAAE,mBAAmB,SAAS;IACvE,MAAM,MAAM,MAAM,MAAM;IACxB,MAAM,OAAO,MAAM,IAAI,IAAI;IAE3B,OAAO,gJAAY,CAAC,IAAI,CAAC;AAC3B"}}]
+}

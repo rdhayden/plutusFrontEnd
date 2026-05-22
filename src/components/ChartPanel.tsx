@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect, useLayoutEffect } from "react";
-import { ChartTab, Timeframe, TIMEFRAME_LABELS, AvailableSignal, SignalOverlay, HorizontalLineDrawing } from "@/lib/types";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { ChartTab, Timeframe, TIMEFRAME_LABELS, AvailableSignal, SignalOverlay, HorizontalLineDrawing, CandleData } from "@/lib/types";
+
+const EMPTY_CANDLE_DATA: CandleData[] = [];
 import type { LogicalRange } from "lightweight-charts";
 import CandlestickChart from "./CandlestickChart";
 import type { CrosshairSyncData } from "./CandlestickChart";
 import VolumeChart from "./VolumeChart";
 import SignalConfigPanel from "./SignalConfigPanel";
 import styles from "./ChartTabBar.module.css";
+import panelStyles from "./ChartPanel.module.css";
 
 interface ChartPane {
   label: string;
@@ -128,35 +131,11 @@ function ResizeHandle({ onDrag }: { onDrag: (deltaY: number) => void }) {
         document.body.style.cursor = "row-resize";
         document.body.style.userSelect = "none";
       }}
-      style={{
-        height: "12px",
-        cursor: "row-resize",
-        position: "relative",
-        zIndex: 10,
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className={panelStyles.resizeDivider}
     >
+      <div className={panelStyles.resizeDividerLine} />
       <div
-        style={{
-          width: "100%",
-          height: "1px",
-          background: "var(--color-border)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "40px",
-          height: "4px",
-          borderRadius: "2px",
-          background: "var(--color-border)",
-        }}
+        className={panelStyles.resizeDividerHandle}
       />
     </div>
   );
@@ -209,7 +188,7 @@ export default function ChartPanel({
   const tabBarRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(tabs.length);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = tabBarRef.current;
     if (!el) return;
     const measure = () => {
@@ -357,6 +336,10 @@ export default function ChartPanel({
     if (activeChart) onAutoExpand(activeChart.id);
   }, [onAutoExpand, activeChart]);
 
+  const handleRemoveMainOverlay = useCallback((signalHash: number) => {
+    if (activeChart) onRemoveSubChart(activeChart.id, [signalHash]);
+  }, [activeChart, onRemoveSubChart]);
+
   const activeDrawings = drawingsPerTab[activeTab ?? ""] ?? [];
 
   const mainOverlays = useMemo(
@@ -412,23 +395,14 @@ export default function ChartPanel({
 
   if (!activeChart) {
     return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--color-text-muted)",
-          fontSize: "var(--body-1-size)",
-        }}
-      >
+      <div className={panelStyles.emptyState}>
         Search for a ticker to view its chart
       </div>
     );
   }
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className={panelStyles.panelRoot}>
       {/* Ticker Tabs */}
       <div className={styles.tabBar} ref={tabBarRef}>
         {visibleTabs.map((tab) => (
@@ -485,21 +459,10 @@ export default function ChartPanel({
       </div>
 
       {/* Chart Header */}
-      <div
-        style={{
-          padding: "var(--inset-s) var(--inset-m)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid var(--color-border-light)",
-        }}
-      >
+      <div className={panelStyles.chartHeader}>
         <div>
           <div className="heading-2">{activeChart.name}</div>
-          <div
-            className="body-1"
-            style={{ color: "var(--color-text-muted)", marginTop: "2px" }}
-          >
+          <div className={`body-1 ${panelStyles.chartHeaderSubtitle}`}>
             {activeChart.ticker} &bull; $
             {activeChart.lastPrice.toLocaleString(undefined, {
               minimumFractionDigits: 2,
@@ -508,162 +471,48 @@ export default function ChartPanel({
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "var(--space-s)", alignItems: "center" }}>
+        <div className={panelStyles.chartControls}>
           {hasVolume && (
             <button
               aria-label={isVolumeVisible ? "Hide volume" : "Show volume"}
               onClick={handleToggleVolume}
-              style={{
-                width: "28px",
-                height: "28px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                background: isVolumeVisible ? "var(--color-primary)" : "var(--color-bg)",
-                color: isVolumeVisible ? "#fff" : "var(--color-text-primary)",
-                cursor: "pointer",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
+              className={`${panelStyles.volumeBtn}${isVolumeVisible ? ` ${panelStyles.volumeBtnActive}` : ""}`}
             >
               Vol
             </button>
           )}
 
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
-            <button
-              aria-label="Expand timespan"
-              onClick={() => onTimespanChange(activeChart.id, "expand")}
-              style={{
-                width: "28px",
-                height: "28px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                background: "var(--color-bg)",
-                color: "var(--color-text-primary)",
-                cursor: "pointer",
-                fontSize: "16px",
-                lineHeight: 1,
-              }}
-            >
-              +
-            </button>
-            <button
-              aria-label="Shrink timespan"
-              onClick={() => onTimespanChange(activeChart.id, "shrink")}
-              style={{
-                width: "28px",
-                height: "28px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                background: "var(--color-bg)",
-                color: "var(--color-text-primary)",
-                cursor: "pointer",
-                fontSize: "16px",
-                lineHeight: 1,
-              }}
-            >
-              -
-            </button>
-            <span className="body-1" style={{ color: "var(--color-text-secondary)" }}>
-              Timeframe:
-            </span>
+          <div className={panelStyles.controlGroup}>
+            <button aria-label="Expand timespan" onClick={() => onTimespanChange(activeChart.id, "expand")} className={panelStyles.iconBtn}>+</button>
+            <button aria-label="Shrink timespan" onClick={() => onTimespanChange(activeChart.id, "shrink")} className={panelStyles.iconBtn}>-</button>
+            <span className={`body-1 ${panelStyles.controlLabel}`}>Timeframe:</span>
             <select
               value={activeChart.timeframe}
-              onChange={(e) =>
-                onTimeframeChange(activeChart.id, e.target.value as Timeframe)
-              }
-              style={{
-                padding: "var(--inset-xs) 12px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                fontSize: "var(--body-1-size)",
-                color: "var(--color-text-primary)",
-                background: "var(--color-bg)",
-                cursor: "pointer",
-                appearance: "none",
-                WebkitAppearance: "none",
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 8px center",
-                paddingRight: "28px",
-              }}
+              onChange={(e) => onTimeframeChange(activeChart.id, e.target.value as Timeframe)}
+              className={panelStyles.select}
             >
               {TIMEFRAMES.map((tf) => (
-                <option key={tf} value={tf}>
-                  {TIMEFRAME_LABELS[tf]}
-                </option>
+                <option key={tf} value={tf}>{TIMEFRAME_LABELS[tf]}</option>
               ))}
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
-            <span className="body-1" style={{ color: "var(--color-text-secondary)" }}>
-              Add Signal:
-            </span>
-            <select
-              value={selectedSignal}
-              onChange={(e) => handleSignalChange(e.target.value)}
-              style={{
-                padding: "var(--inset-xs) 12px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                fontSize: "var(--body-1-size)",
-                color: "var(--color-text-primary)",
-                background: "var(--color-bg)",
-                cursor: "pointer",
-                appearance: "none",
-                WebkitAppearance: "none",
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 8px center",
-                paddingRight: "28px",
-              }}
-            >
+          <div className={panelStyles.controlGroup}>
+            <span className={`body-1 ${panelStyles.controlLabel}`}>Add Signal:</span>
+            <select value={selectedSignal} onChange={(e) => handleSignalChange(e.target.value)} className={panelStyles.select}>
               <option value="">-- Select --</option>
               {availableSignals.map((signal) => (
-                <option key={signal.name} value={signal.name}>
-                  {signal.name}
-                </option>
+                <option key={signal.name} value={signal.name}>{signal.name}</option>
               ))}
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
-            <span className="body-1" style={{ color: "var(--color-text-secondary)" }}>
-              Drawings:
-            </span>
+          <div className={panelStyles.controlGroup}>
+            <span className={`body-1 ${panelStyles.controlLabel}`}>Drawings:</span>
             <select
               value=""
-              onChange={(e) => {
-                if (e.target.value) handleAddDrawing(e.target.value);
-              }}
-              style={{
-                padding: "var(--inset-xs) 12px",
-                border: "1px solid var(--color-border)",
-                borderRadius: "var(--radius-m)",
-                fontSize: "var(--body-1-size)",
-                color: "var(--color-text-primary)",
-                background: "var(--color-bg)",
-                cursor: "pointer",
-                appearance: "none",
-                WebkitAppearance: "none",
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 8px center",
-                paddingRight: "28px",
-              }}
+              onChange={(e) => { if (e.target.value) handleAddDrawing(e.target.value); }}
+              className={panelStyles.select}
             >
               <option value="">-- Select --</option>
               <option value="horizontal-line">Horizontal Line</option>
@@ -673,7 +522,7 @@ export default function ChartPanel({
       </div>
 
       {/* Scrollable chart area */}
-      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+      <div className={panelStyles.chartScrollArea}>
         {/* Signal Config Panel */}
         {showConfigPanel && selectedSignalDef && (
           <SignalConfigPanel
@@ -687,7 +536,7 @@ export default function ChartPanel({
         )}
 
         {/* Main Chart */}
-        <div style={{ padding: "var(--inset-m)", height: `${mainChartHeight}px`, minHeight: `${MIN_CHART_HEIGHT}px`, overflow: "hidden" }}>
+        <div className={panelStyles.mainChartWrapper} style={{ height: `${mainChartHeight}px`, minHeight: `${MIN_CHART_HEIGHT}px` }}>
           <CandlestickChart
             data={activeChart.data}
             timeframe={activeChart.timeframe}
@@ -700,6 +549,7 @@ export default function ChartPanel({
             drawings={activeDrawings}
             onDrawingPriceChange={handleDrawingPriceChange}
             onDrawingDelete={handleDrawingDelete}
+            onRemoveOverlay={handleRemoveMainOverlay}
           />
         </div>
 
@@ -707,11 +557,9 @@ export default function ChartPanel({
 
         {/* Volume sub-chart */}
         {isVolumeVisible && (
-          <div style={{ height: `${volumeChartHeight}px`, minHeight: `${MIN_CHART_HEIGHT}px`, padding: "0 var(--inset-m) var(--inset-m)", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", padding: "var(--inset-xs) 0" }}>
-              <span className="body-1" style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}>
-                Volume
-              </span>
+          <div className={panelStyles.volumeWrapper} style={{ height: `${volumeChartHeight}px`, minHeight: `${MIN_CHART_HEIGHT}px` }}>
+            <div className={panelStyles.subChartHeader}>
+              <span className={`body-1 ${panelStyles.subChartLabel}`}>Volume</span>
             </div>
             <VolumeChart
               data={activeChart.data}
@@ -728,52 +576,21 @@ export default function ChartPanel({
 
         {/* Sub-charts for independent signals */}
         {subCharts.map((pane) => (
-          <div key={pane.label} style={{ marginTop: "var(--space-m)" }}>
+          <div key={pane.label} className={panelStyles.subChartSection}>
             <div
-              style={{
-                height: `${subChartHeights[pane.label] ?? DEFAULT_SUB_HEIGHT}px`,
-                minHeight: `${MIN_CHART_HEIGHT}px`,
-                padding: "0 var(--inset-m) var(--inset-m)",
-                overflow: "hidden",
-              }}
+              className={panelStyles.subChartWrapper}
+              style={{ height: `${subChartHeights[pane.label] ?? DEFAULT_SUB_HEIGHT}px`, minHeight: `${MIN_CHART_HEIGHT}px` }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "var(--inset-xs) 0",
-                }}
-              >
-                <span
-                  className="body-1"
-                  style={{
-                    color: "var(--color-text-secondary)",
-                    fontSize: "12px",
-                  }}
-                >
-                  {pane.label}
-                </span>
+              <div className={panelStyles.subChartHeader}>
+                <span className={`body-1 ${panelStyles.subChartLabel}`}>{pane.label}</span>
                 <button
                   aria-label={`Remove ${pane.label} subchart`}
                   onClick={() => onRemoveSubChart(activeChart.id, pane.overlays.map((o) => o.signalHash))}
-                  style={{
-                    padding: "0 var(--inset-xs)",
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    color: "var(--color-text-muted)",
-                    fontSize: "14px",
-                    lineHeight: 1,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  ×
-                </button>
+                  className={panelStyles.subChartRemoveBtn}
+                >×</button>
               </div>
               <CandlestickChart
-                data={[]}
+                data={EMPTY_CANDLE_DATA}
                 timeframe={activeChart.timeframe}
                 overlays={pane.overlays}
                 visibleLogicalRange={sharedLogicalRange}
@@ -788,7 +605,7 @@ export default function ChartPanel({
         ))}
 
         {/* Bottom spacing */}
-        <div style={{ height: "var(--space-xl)", flexShrink: 0 }} />
+        <div className={panelStyles.bottomSpacer} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createChart, CandlestickSeries, LineSeries, ISeriesApi, LogicalRange, Time } from "lightweight-charts";
 import type { MouseEventParams } from "lightweight-charts";
 import { CandleData, Timeframe, SignalOverlay, HorizontalLineDrawing } from "@/lib/types";
+import styles from "./CandlestickChart.module.css";
 
 /** Crosshair sync data: raw pixel x for line positioning, time for data lookup. */
 export interface CrosshairSyncData {
@@ -37,6 +38,7 @@ interface CandlestickChartProps {
   drawings?: HorizontalLineDrawing[];
   onDrawingPriceChange?: (id: string, price: number) => void;
   onDrawingDelete?: (id: string) => void;
+  onRemoveOverlay?: (signalHash: number) => void;
 }
 
 const INTRADAY_TIMEFRAMES = new Set<Timeframe>(["TICK", "SECOND", "MINUTE", "HOUR"]);
@@ -55,6 +57,7 @@ export default function CandlestickChart({
   drawings,
   onDrawingPriceChange,
   onDrawingDelete,
+  onRemoveOverlay,
 }: CandlestickChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -74,6 +77,9 @@ export default function CandlestickChart({
   onCrosshairXChangeRef.current = onCrosshairXChange;
   const isCrosshairSourceRef = useRef(false);
   const overlayLookupRef = useRef<{ label: string; color: string; byTime: Map<string, number> }[]>([]);
+  const signalSeriesRef = useRef<{ series: ISeriesApi<"Line">; byTime: Map<string, number>; signalHash: number; signalName: string }[]>([]);
+  const onRemoveOverlayRef = useRef(onRemoveOverlay);
+  onRemoveOverlayRef.current = onRemoveOverlay;
 
   // Drawings
   const drawingsRef = useRef<HorizontalLineDrawing[]>([]);
@@ -86,6 +92,7 @@ export default function CandlestickChart({
   const onDrawingDeleteRef = useRef(onDrawingDelete);
   onDrawingDeleteRef.current = onDrawingDelete;
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [signalContextMenu, setSignalContextMenu] = useState<{ signalHash: number; signalName: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -179,6 +186,7 @@ export default function CandlestickChart({
 
     const lineSeriesMap: { series: ISeriesApi<"Line">; label: string; color: string }[] = [];
     overlayLookupRef.current = [];
+    signalSeriesRef.current = [];
 
     for (let i = 0; i < overlays.length; i++) {
       const overlay = overlays[i];
@@ -210,6 +218,7 @@ export default function CandlestickChart({
           byTime.set(String(pt.time), pt.values[key] ?? 0);
         }
         overlayLookupRef.current.push({ label, color, byTime });
+        signalSeriesRef.current.push({ series: lineSeries, byTime, signalHash: overlay.signalHash, signalName: overlay.signalName });
       }
     }
 
@@ -316,11 +325,40 @@ export default function CandlestickChart({
       suppressRef.current = false;
     }, 1000);
 
+    const chartEl = containerRef.current;
+    const handleContextMenu = (e: MouseEvent) => {
+      if (!chartEl) return;
+      const rect = chartEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const time = chart.timeScale().coordinateToTime(x);
+      if (time == null) return;
+      const timeKey = String(time);
+      const THRESHOLD = 8;
+      let best: { signalHash: number; signalName: string; dist: number } | null = null;
+      for (const { series, byTime, signalHash, signalName } of signalSeriesRef.current) {
+        const value = byTime.get(timeKey);
+        if (value === undefined) continue;
+        const seriesY = series.priceToCoordinate(value);
+        if (seriesY === null) continue;
+        const dist = Math.abs((seriesY as number) - y);
+        if (dist < THRESHOLD && (!best || dist < best.dist)) {
+          best = { signalHash, signalName, dist };
+        }
+      }
+      if (best) {
+        e.preventDefault();
+        setSignalContextMenu({ signalHash: best.signalHash, signalName: best.signalName, x: e.clientX, y: e.clientY });
+      }
+    };
+    chartEl?.addEventListener("contextmenu", handleContextMenu);
+
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (suppressTimerRef.current) clearTimeout(suppressTimerRef.current);
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
       chart.timeScale().unsubscribeVisibleLogicalRangeChange(handleVisibleRangeChange);
+      chartEl?.removeEventListener("contextmenu", handleContextMenu);
       chart.remove();
       chartRef.current = null;
       candlestickSeriesRef.current = null;
@@ -373,13 +411,20 @@ export default function CandlestickChart({
     };
   }, []);
 
-  // Close context menu on any outside click
+  // Close context menus on any outside click
   useEffect(() => {
     if (!contextMenu) return;
     const close = () => setContextMenu(null);
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, [contextMenu]);
+
+  useEffect(() => {
+    if (!signalContextMenu) return;
+    const close = () => setSignalContextMenu(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [signalContextMenu]);
 
   // Sync crosshair from other charts using a custom vertical line
   useEffect(() => {
@@ -446,43 +491,11 @@ export default function CandlestickChart({
   }, [crosshairXFraction]);
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      <div
-        ref={containerRef}
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
+    <div className={styles.chartWrapper}>
+      <div ref={containerRef} className={styles.chartContainer} />
       {/* Custom vertical sync line for crosshair sync from other charts */}
-      <div
-        ref={syncLineRef}
-        style={{
-          display: "none",
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          width: 0,
-          borderLeft: "1px dashed hsl(215, 80%, 40%)",
-          pointerEvents: "none",
-          zIndex: 10,
-        }}
-      >
-        <div
-          data-sync-label=""
-          style={{
-            position: "absolute",
-            bottom: "24px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "hsl(215, 80%, 40%)",
-            color: "#fff",
-            fontSize: "11px",
-            padding: "2px 6px",
-            borderRadius: "3px",
-            whiteSpace: "nowrap",
-          }}
-        />
+      <div ref={syncLineRef} className={styles.syncLine}>
+        <div data-sync-label="" className={styles.syncLabel} />
       </div>
       {/* Horizontal line drawings */}
       {(drawings ?? []).map((d) => {
@@ -502,43 +515,14 @@ export default function CandlestickChart({
               e.stopPropagation();
               setContextMenu({ id: d.id, x: e.clientX, y: e.clientY });
             }}
-            style={{
-              position: "absolute",
-              top: `${y - 6}px`,
-              left: 0,
-              right: 0,
-              height: "13px",
-              cursor: "ns-resize",
-              zIndex: 30,
-            }}
+            className={styles.drawingHandle}
+            style={{ top: `${y - 6}px` }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: "6px",
-                left: 0,
-                right: 0,
-                height: "1px",
-                background: "#000",
-                pointerEvents: "none",
-              }}
-            />
+            <div className={styles.drawingLine} />
             <div
               data-testid={`drawing-label-${d.id}`}
-              style={{
-                position: "absolute",
-                top: "50%",
-                right: PRICE_SCALE_MIN_WIDTH + 4,
-                transform: "translateY(-50%)",
-                background: "hsla(220, 13%, 18%, 0.92)",
-                color: "#fff",
-                fontSize: "11px",
-                padding: "2px 5px",
-                borderRadius: "3px",
-                pointerEvents: "none",
-                whiteSpace: "nowrap",
-                userSelect: "none",
-              }}
+              className={styles.drawingLabel}
+              style={{ right: PRICE_SCALE_MIN_WIDTH + 4 }}
             >
               {d.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
@@ -548,18 +532,8 @@ export default function CandlestickChart({
       {/* Context menu for drawings */}
       {contextMenu && (
         <div
-          style={{
-            position: "fixed",
-            top: contextMenu.y,
-            left: contextMenu.x,
-            zIndex: 1000,
-            background: "var(--color-bg)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "var(--radius-s)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-            overflow: "hidden",
-            minWidth: "100px",
-          }}
+          className={styles.contextMenu}
+          style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <button
             onClick={(e) => {
@@ -567,49 +541,31 @@ export default function CandlestickChart({
               onDrawingDeleteRef.current?.(contextMenu.id);
               setContextMenu(null);
             }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "var(--inset-xs) var(--inset-s)",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              textAlign: "left",
-              fontSize: "var(--body-2-size)",
-              color: "var(--color-red-60)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "var(--color-bg-secondary)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-            }}
+            className={styles.contextMenuItem}
           >
             Delete
           </button>
         </div>
       )}
-      <div
-        ref={tooltipRef}
-        style={{
-          display: "none",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          zIndex: 20,
-          pointerEvents: "none",
-          minWidth: "140px",
-          maxWidth: "200px",
-          padding: "8px 10px",
-          borderRadius: "6px",
-          fontSize: "12px",
-          lineHeight: "1.5",
-          fontFamily: "Inter, system-ui, sans-serif",
-          background: "hsla(220, 13%, 18%, 0.92)",
-          color: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        }}
-      />
+      {/* Context menu for signal overlays */}
+      {signalContextMenu && (
+        <div
+          className={styles.contextMenu}
+          style={{ top: signalContextMenu.y, left: signalContextMenu.x }}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveOverlayRef.current?.(signalContextMenu.signalHash);
+              setSignalContextMenu(null);
+            }}
+            className={styles.contextMenuItem}
+          >
+            Delete {signalContextMenu.signalName}
+          </button>
+        </div>
+      )}
+      <div ref={tooltipRef} className={styles.tooltip} />
     </div>
   );
 }

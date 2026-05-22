@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/src/components/VolumeChart.module.css"],"sourcesContent":[".chartWrapper {\n  width: 100%;\n  height: 100%;\n  position: relative;\n}\n\n.chartContainer {\n  width: 100%;\n  height: 100%;\n}\n\n/* Sync line — left position managed by JS via ref */\n.syncLine {\n  display: none;\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  width: 0;\n  border-left: 1px dashed hsl(215, 80%, 40%);\n  pointer-events: none;\n  z-index: 10;\n}\n\n/* Tooltip — top/left managed by JS via ref */\n.tooltip {\n  display: none;\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 20;\n  pointer-events: none;\n  min-width: 100px;\n  max-width: 140px;\n  padding: 8px 10px;\n  border-radius: 6px;\n  font-size: 12px;\n  line-height: 1.5;\n  font-family: Inter, system-ui, sans-serif;\n  background: hsla(220, 13%, 18%, 0.92);\n  color: #fff;\n  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);\n}\n"],"names":[],"mappings":"AAAA;;;;;;AAMA;;;;;AAMA;;;;;;;;;;;AAYA"}}]
+}

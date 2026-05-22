@@ -1,0 +1,646 @@
+/* [project]/src/components/Header.module.css [app-client] (css) */
+.Header-module__hBw1pG__header {
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 0 var(--inset-m);
+  align-items: center;
+  gap: var(--space-l);
+  display: flex;
+}
+
+.Header-module__hBw1pG__logo {
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-2-size);
+  letter-spacing: -.02em;
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.Header-module__hBw1pG__nav {
+  gap: var(--space-xs);
+  display: flex;
+}
+
+.Header-module__hBw1pG__navLink {
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--inset-xs) var(--inset-s);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: var(--color-text-secondary);
+  background: none;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+  display: flex;
+}
+
+.Header-module__hBw1pG__navLinkActive {
+  color: var(--color-primary);
+  background: var(--color-bg-secondary);
+}
+
+.Header-module__hBw1pG__navLinkIcon {
+  font-size: 14px;
+}
+
+.Header-module__hBw1pG__controls {
+  align-items: center;
+  gap: var(--space-xs);
+  margin-left: auto;
+  display: flex;
+}
+
+.Header-module__hBw1pG__liveLabel {
+  color: var(--color-text-secondary);
+}
+
+.Header-module__hBw1pG__toggle {
+  background: var(--grey-60);
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  transition: background .2s;
+  position: relative;
+}
+
+.Header-module__hBw1pG__toggleOn {
+  background: var(--green-40);
+}
+
+.Header-module__hBw1pG__toggleThumb {
+  background: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  transition: left .2s;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.Header-module__hBw1pG__toggleThumbOn {
+  left: 18px;
+}
+
+/* [project]/src/components/SearchBar.module.css [app-client] (css) */
+.SearchBar-module__9ObJ7W__wrapper {
+  padding: var(--inset-s);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.SearchBar-module__9ObJ7W__inputRow {
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-m);
+  height: 36px;
+  padding: 0 12px;
+  display: flex;
+}
+
+.SearchBar-module__9ObJ7W__input {
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  outline: none;
+  flex: 1;
+}
+
+/* [project]/src/components/NotesPanel.module.css [app-client] (css) */
+.NotesPanel-module__klo9CG__panel {
+  z-index: 1000;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  flex-direction: column;
+  width: 280px;
+  display: flex;
+  position: fixed;
+  overflow: hidden;
+  box-shadow: 0 4px 16px #0000001f;
+}
+
+.NotesPanel-module__klo9CG__header {
+  padding: var(--inset-xs) var(--inset-s);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__title {
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.NotesPanel-module__klo9CG__closeBtn {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  align-items: center;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__textarea {
+  resize: none;
+  padding: var(--inset-s);
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  border: none;
+  outline: none;
+  flex: 1;
+  height: 130px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.NotesPanel-module__klo9CG__footer {
+  padding: var(--inset-xs) var(--inset-s);
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  background: var(--color-bg-secondary);
+  display: flex;
+}
+
+.NotesPanel-module__klo9CG__btnDelete {
+  padding: 4px var(--inset-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+  background: none;
+}
+
+/* [project]/src/components/CandlestickChart.module.css [app-client] (css) */
+.CandlestickChart-module__ZmXyYW__chartWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.CandlestickChart-module__ZmXyYW__chartContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.CandlestickChart-module__ZmXyYW__syncLine {
+  pointer-events: none;
+  z-index: 10;
+  border-left: 1px dashed #1458b8;
+  width: 0;
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.CandlestickChart-module__ZmXyYW__syncLabel {
+  color: #fff;
+  white-space: nowrap;
+  background: #1458b8;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 11px;
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.CandlestickChart-module__ZmXyYW__drawingHandle {
+  cursor: ns-resize;
+  z-index: 30;
+  height: 13px;
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.CandlestickChart-module__ZmXyYW__drawingLine {
+  pointer-events: none;
+  background: #000;
+  height: 1px;
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+}
+
+.CandlestickChart-module__ZmXyYW__drawingLabel {
+  color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  background: #282c34eb;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 11px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.CandlestickChart-module__ZmXyYW__contextMenu {
+  z-index: 1000;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  min-width: 100px;
+  position: fixed;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0000002e;
+}
+
+.CandlestickChart-module__ZmXyYW__contextMenuItem {
+  width: 100%;
+  padding: var(--inset-xs) var(--inset-s);
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--body-2-size);
+  color: var(--color-red-60);
+  background: none;
+  border: none;
+  display: block;
+}
+
+.CandlestickChart-module__ZmXyYW__contextMenuItem:hover {
+  background: var(--color-bg-secondary);
+}
+
+.CandlestickChart-module__ZmXyYW__tooltip {
+  z-index: 20;
+  pointer-events: none;
+  color: #fff;
+  background: #282c34eb;
+  border-radius: 6px;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 8px 10px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-shadow: 0 2px 8px #00000040;
+}
+
+/* [project]/src/components/VolumeChart.module.css [app-client] (css) */
+.VolumeChart-module__WzZH3W__chartWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.VolumeChart-module__WzZH3W__chartContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.VolumeChart-module__WzZH3W__syncLine {
+  pointer-events: none;
+  z-index: 10;
+  border-left: 1px dashed #1458b8;
+  width: 0;
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.VolumeChart-module__WzZH3W__tooltip {
+  z-index: 20;
+  pointer-events: none;
+  color: #fff;
+  background: #282c34eb;
+  border-radius: 6px;
+  min-width: 100px;
+  max-width: 140px;
+  padding: 8px 10px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-shadow: 0 2px 8px #00000040;
+}
+
+/* [project]/src/components/ChartTabBar.module.css [app-client] (css) */
+.ChartTabBar-module__UmGooa__tabBar {
+  border-bottom: 1px solid var(--color-border);
+  min-height: 48px;
+  padding: 0 var(--inset-s);
+  background: var(--color-bg-secondary);
+  align-items: stretch;
+  gap: 0;
+  display: flex;
+}
+
+.ChartTabBar-module__UmGooa__tab {
+  border-bottom: 2px solid #0000;
+  flex: 1 1 0;
+  align-items: center;
+  min-width: 52px;
+  margin-bottom: -1px;
+  transition: flex-grow .15s;
+  display: flex;
+  overflow: hidden;
+}
+
+.ChartTabBar-module__UmGooa__tabBar:has(.ChartTabBar-module__UmGooa__tab:hover) .ChartTabBar-module__UmGooa__tab:not(:hover) {
+  flex-grow: .3;
+}
+
+.ChartTabBar-module__UmGooa__tab:hover {
+  flex: 0 0 max-content;
+  transition: none;
+  overflow: visible;
+}
+
+.ChartTabBar-module__UmGooa__tabActive {
+  border-bottom-color: var(--color-primary);
+}
+
+.ChartTabBar-module__UmGooa__tabBtn {
+  padding: var(--inset-xs) var(--space-xs) var(--inset-xs) var(--inset-s);
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  flex-direction: column;
+  justify-content: center;
+  transition: color .15s;
+  display: flex;
+}
+
+.ChartTabBar-module__UmGooa__tabBtnActive {
+  color: var(--color-primary);
+}
+
+.ChartTabBar-module__UmGooa__ticker {
+  font-size: var(--body-1-size);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.ChartTabBar-module__UmGooa__tickerActive {
+  font-weight: 600;
+}
+
+.ChartTabBar-module__UmGooa__closeBtn {
+  padding: 0 var(--inset-xs) 0 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+  display: none;
+}
+
+.ChartTabBar-module__UmGooa__tab:hover .ChartTabBar-module__UmGooa__closeBtn {
+  display: flex;
+}
+
+.ChartTabBar-module__UmGooa__pill {
+  min-width: 44px;
+  height: 28px;
+  padding: 0 var(--inset-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  background: none;
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: auto;
+  transition: background .15s, color .15s;
+}
+
+.ChartTabBar-module__UmGooa__pill:hover {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.ChartTabBar-module__UmGooa__pillDropdown {
+  z-index: 100;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  min-width: 120px;
+  position: fixed;
+  overflow: hidden;
+  box-shadow: 0 4px 12px #0000001f;
+}
+
+.ChartTabBar-module__UmGooa__pillDropdownItem {
+  width: 100%;
+  padding: 10px var(--inset-m);
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  transition: background .15s;
+  display: block;
+}
+
+.ChartTabBar-module__UmGooa__pillDropdownItem:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* [project]/src/components/AddWatchlistModal.module.css [app-client] (css) */
+.AddWatchlistModal-module__UaZRrW__backdrop {
+  z-index: 1000;
+  background: #0006;
+  position: fixed;
+  inset: 0;
+}
+
+.AddWatchlistModal-module__UaZRrW__modal {
+  z-index: 1001;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  width: 320px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 24px #0003;
+}
+
+.AddWatchlistModal-module__UaZRrW__header {
+  padding: var(--inset-s) var(--inset-m);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.AddWatchlistModal-module__UaZRrW__title {
+  font-weight: 600;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+}
+
+.AddWatchlistModal-module__UaZRrW__closeBtn {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  align-items: center;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+}
+
+.AddWatchlistModal-module__UaZRrW__body {
+  padding: var(--inset-m);
+}
+
+.AddWatchlistModal-module__UaZRrW__label {
+  font-size: var(--body-2-size);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-xs);
+  display: block;
+}
+
+.AddWatchlistModal-module__UaZRrW__input {
+  width: 100%;
+  padding: var(--inset-xs) var(--inset-s);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  color: var(--color-text-primary);
+  font-size: var(--body-1-size);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.AddWatchlistModal-module__UaZRrW__inputError {
+  border-color: var(--color-negative);
+}
+
+.AddWatchlistModal-module__UaZRrW__errorMsg {
+  margin-top: var(--space-xs);
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+}
+
+.AddWatchlistModal-module__UaZRrW__footer {
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  margin-top: var(--inset-m);
+  display: flex;
+}
+
+.AddWatchlistModal-module__UaZRrW__btnCancel {
+  padding: var(--inset-xs) var(--inset-m);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: none;
+}
+
+.AddWatchlistModal-module__UaZRrW__btnSubmit {
+  padding: var(--inset-xs) var(--inset-m);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* [project]/src/components/ConfirmDialog.module.css [app-client] (css) */
+.ConfirmDialog-module__dLTK2q__backdrop {
+  z-index: 1000;
+  background: #0006;
+  position: fixed;
+  inset: 0;
+}
+
+.ConfirmDialog-module__dLTK2q__dialog {
+  z-index: 1001;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  width: 320px;
+  padding: var(--inset-m);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 24px #0003;
+}
+
+.ConfirmDialog-module__dLTK2q__message {
+  margin: 0 0 var(--inset-m) 0;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.ConfirmDialog-module__dLTK2q__footer {
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  display: flex;
+}
+
+.ConfirmDialog-module__dLTK2q__btnCancel {
+  padding: var(--inset-xs) var(--inset-m);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-text-primary);
+  background: none;
+}
+
+.ConfirmDialog-module__dLTK2q__btnConfirm {
+  padding: var(--inset-xs) var(--inset-m);
+  border: 1px solid var(--color-negative);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+  background: none;
+  font-weight: 600;
+}
+
+/*# sourceMappingURL=src_components_014aa33b._.css.map*/

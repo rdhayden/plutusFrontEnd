@@ -1,0 +1,78 @@
+/* [project]/src/components/SignalConfigPanel.module.css [app-client] (css) */
+.SignalConfigPanel-module__Nei1Wq__panel {
+  padding: var(--inset-m);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
+}
+
+.SignalConfigPanel-module__Nei1Wq__header {
+  margin-bottom: var(--space-s);
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+}
+
+.SignalConfigPanel-module__Nei1Wq__closeBtn {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-size: 18px;
+}
+
+.SignalConfigPanel-module__Nei1Wq__form {
+  gap: var(--space-s);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  display: flex;
+}
+
+.SignalConfigPanel-module__Nei1Wq__field {
+  flex-direction: column;
+  gap: 2px;
+  display: flex;
+}
+
+.SignalConfigPanel-module__Nei1Wq__fieldLabel {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.SignalConfigPanel-module__Nei1Wq__fieldInput {
+  padding: var(--inset-xs) 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  width: 140px;
+}
+
+.SignalConfigPanel-module__Nei1Wq__fieldInputError {
+  border-color: var(--color-red-60);
+}
+
+.SignalConfigPanel-module__Nei1Wq__fieldError {
+  color: var(--color-red-60);
+  font-size: 11px;
+}
+
+.SignalConfigPanel-module__Nei1Wq__btnSubmit {
+  padding: var(--inset-xs) var(--inset-s);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: #fff;
+  background: var(--color-primary);
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.SignalConfigPanel-module__Nei1Wq__duplicateMsg {
+  margin-top: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+/*# sourceMappingURL=src_components_SignalConfigPanel_module_css_bad6b30c._.single.css.map*/

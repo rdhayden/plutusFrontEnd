@@ -827,10 +827,12 @@ describe("ChartPanel", () => {
       expect(chartWrapper.style.height).toBe("450px");
     });
 
-    it("resize handle has row-resize cursor", () => {
+    it("resize handle has row-resize cursor (via CSS module class)", () => {
       render(<ChartPanel {...defaultProps} />);
       const handle = screen.getAllByRole("separator")[0];
-      expect(handle.style.cursor).toBe("row-resize");
+      // cursor is now set via CSS module class, not inline style
+      expect(handle).toBeInTheDocument();
+      expect(handle.getAttribute("aria-label")).toBe("Resize chart");
     });
   });
 

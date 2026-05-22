@@ -11,6 +11,7 @@ export async function GET() {
           parameters {
             name
             value
+            default
           }
           visualiseWith
         }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AvailableSignal, SignalParameter } from "@/lib/types";
+import styles from "./SignalConfigPanel.module.css";
 
 interface SignalConfigPanelProps {
   signal: AvailableSignal;
@@ -38,6 +39,7 @@ export default function SignalConfigPanel({
     for (const p of signal.parameters) {
       if (p.name === "ticker") initial[p.name] = defaultTicker;
       else if (p.name === "exchange") initial[p.name] = defaultExchange ?? "";
+      else if (p.default != null) initial[p.name] = String(p.default);
       else initial[p.name] = "";
     }
     return initial;
@@ -90,34 +92,10 @@ export default function SignalConfigPanel({
   };
 
   return (
-    <div
-      style={{
-        padding: "var(--inset-m)",
-        borderBottom: "1px solid var(--color-border-light)",
-        background: "var(--color-bg-secondary)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "var(--space-s)",
-        }}
-      >
+    <div className={styles.panel}>
+      <div className={styles.header}>
         <span className="heading-3">Configure {signal.name}</span>
-        <button
-          aria-label="Close signal config"
-          onClick={onClose}
-          style={{
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            fontSize: "18px",
-            color: "var(--color-text-secondary)",
-            padding: "2px 6px",
-          }}
-        >
+        <button aria-label="Close signal config" onClick={onClose} className={styles.closeBtn}>
           &times;
         </button>
       </div>
@@ -127,14 +105,11 @@ export default function SignalConfigPanel({
           e.preventDefault();
           handleSubmit();
         }}
-        style={{ display: "flex", gap: "var(--space-s)", flexWrap: "wrap", alignItems: "flex-start" }}
+        className={styles.form}
       >
         {signal.parameters.map((param) => (
-          <div key={param.name} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <label
-              className="body-1"
-              style={{ color: "var(--color-text-secondary)", fontSize: "12px" }}
-            >
+          <div key={param.name} className={styles.field}>
+            <label className={`body-1 ${styles.fieldLabel}`}>
               {param.name} ({param.value})
             </label>
             <input
@@ -150,55 +125,19 @@ export default function SignalConfigPanel({
               value={values[param.name] ?? ""}
               onChange={(e) => handleChange(param.name, e.target.value)}
               aria-label={param.name}
-              style={{
-                padding: "var(--inset-xs) 8px",
-                border: `1px solid ${errors[param.name] ? "var(--color-red-60)" : "var(--color-border)"}`,
-                borderRadius: "var(--radius-m)",
-                fontSize: "var(--body-1-size)",
-                color: "var(--color-text-primary)",
-                background: "var(--color-bg)",
-                width: "140px",
-              }}
+              className={`${styles.fieldInput}${errors[param.name] ? ` ${styles.fieldInputError}` : ""}`}
             />
             {errors[param.name] && (
-              <span
-                role="alert"
-                style={{ color: "var(--color-red-60)", fontSize: "11px" }}
-              >
-                {errors[param.name]}
-              </span>
+              <span role="alert" className={styles.fieldError}>{errors[param.name]}</span>
             )}
           </div>
         ))}
 
-        <button
-          type="submit"
-          style={{
-            padding: "var(--inset-xs) var(--inset-s)",
-            border: "1px solid var(--color-primary)",
-            borderRadius: "var(--radius-m)",
-            fontSize: "var(--body-1-size)",
-            color: "#fff",
-            background: "var(--color-primary)",
-            cursor: "pointer",
-            alignSelf: "flex-end",
-          }}
-        >
-          Add Signal
-        </button>
+        <button type="submit" className={styles.btnSubmit}>Add Signal</button>
       </form>
 
       {duplicateMessage && (
-        <div
-          role="status"
-          style={{
-            marginTop: "var(--space-xs)",
-            color: "var(--color-text-muted)",
-            fontSize: "12px",
-          }}
-        >
-          {duplicateMessage}
-        </div>
+        <div role="status" className={styles.duplicateMsg}>{duplicateMessage}</div>
       )}
     </div>
   );

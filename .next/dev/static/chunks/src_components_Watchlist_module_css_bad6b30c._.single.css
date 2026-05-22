@@ -1,0 +1,204 @@
+/* [project]/src/components/Watchlist.module.css [app-client] (css) */
+.Watchlist-module__eA6O7G__root {
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.Watchlist-module__eA6O7G__header {
+  align-items: center;
+  width: 100%;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__dragHandle {
+  padding: var(--inset-s) 0 var(--inset-s) var(--inset-s);
+  cursor: grab;
+  color: var(--color-text-muted);
+  opacity: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  align-items: center;
+  transition: opacity .15s;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__header:hover .Watchlist-module__eA6O7G__dragHandle {
+  opacity: .6;
+}
+
+.Watchlist-module__eA6O7G__toggleBtn {
+  padding: var(--inset-s) var(--inset-xs) var(--inset-s) var(--inset-xs);
+  cursor: pointer;
+  text-align: left;
+  background: none;
+  border: none;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__toggleBtnName {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.Watchlist-module__eA6O7G__chevron {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: transform .2s;
+  transform: rotate(0);
+}
+
+.Watchlist-module__eA6O7G__chevronOpen {
+  transform: rotate(180deg);
+}
+
+.Watchlist-module__eA6O7G__renameWrapper {
+  padding: var(--inset-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.Watchlist-module__eA6O7G__renameInput {
+  width: 100%;
+  padding: 2px var(--inset-xs);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-s);
+  color: var(--color-text-primary);
+  font-size: var(--body-1-size);
+  box-sizing: border-box;
+  outline: none;
+  font-weight: 600;
+}
+
+.Watchlist-module__eA6O7G__renameInputError {
+  border-color: var(--color-negative);
+}
+
+.Watchlist-module__eA6O7G__renameError {
+  font-size: var(--body-2-size);
+  color: var(--color-negative);
+  margin-top: 2px;
+}
+
+.Watchlist-module__eA6O7G__renameBtn {
+  padding: var(--inset-s) var(--inset-xs);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  opacity: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  align-items: center;
+  transition: opacity .15s;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__header:hover .Watchlist-module__eA6O7G__renameBtn {
+  opacity: .7;
+}
+
+.Watchlist-module__eA6O7G__deleteBtn {
+  padding: var(--inset-s) var(--inset-s) var(--inset-s) var(--inset-xs);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  opacity: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: opacity .15s;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__header:hover .Watchlist-module__eA6O7G__deleteBtn {
+  opacity: 1;
+}
+
+.Watchlist-module__eA6O7G__emptyMsg {
+  padding: var(--inset-s) var(--inset-s) var(--inset-m);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--body-2-size);
+}
+
+.Watchlist-module__eA6O7G__itemRow {
+  background: none;
+  align-items: center;
+  transition: background .15s;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__itemRow:hover {
+  background: var(--color-bg-secondary);
+}
+
+.Watchlist-module__eA6O7G__itemBtn {
+  padding: 10px var(--inset-xs) 10px var(--inset-s);
+  cursor: pointer;
+  text-align: left;
+  background: none;
+  border: none;
+  flex-direction: column;
+  flex: 1;
+  align-items: flex-start;
+  min-width: 0;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__itemMeta {
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__itemTicker {
+  font-weight: 600;
+  font-size: var(--body-1-size);
+  color: var(--color-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.Watchlist-module__eA6O7G__noteIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.Watchlist-module__eA6O7G__itemName {
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  overflow: hidden;
+}
+
+.Watchlist-module__eA6O7G__removeBtn {
+  padding: 0 var(--inset-s) 0 var(--inset-xs);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  opacity: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+  transition: opacity .15s;
+  display: flex;
+}
+
+.Watchlist-module__eA6O7G__itemRow:hover .Watchlist-module__eA6O7G__removeBtn {
+  opacity: 1;
+}
+
+/*# sourceMappingURL=src_components_Watchlist_module_css_bad6b30c._.single.css.map*/

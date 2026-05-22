@@ -1,0 +1,19 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/chart-state/route": "app/api/chart-state/route.js",
+  "/api/signals/available/route": "app/api/signals/available/route.js",
+  "/api/signals/callback/route": "app/api/signals/callback/route.js",
+  "/api/signals/route": "app/api/signals/route.js",
+  "/api/tickers/search/route": "app/api/tickers/search/route.js",
+  "/api/watchlist/[ticker]/route": "app/api/watchlist/[ticker]/route.js",
+  "/api/watchlist/route": "app/api/watchlist/route.js",
+  "/api/watchlists/[name]/route": "app/api/watchlists/[name]/route.js",
+  "/api/watchlists/all/route": "app/api/watchlists/all/route.js",
+  "/api/watchlists/reorder/route": "app/api/watchlists/reorder/route.js",
+  "/api/watchlists/route": "app/api/watchlists/route.js",
+  "/backtest/page": "app/backtest/page.js",
+  "/journal/page": "app/journal/page.js",
+  "/page": "app/page.js",
+  "/scanner/page": "app/scanner/page.js"
+}

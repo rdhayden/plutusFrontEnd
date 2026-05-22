@@ -187,7 +187,7 @@ describe("VolumeChart - crosshair tooltip", () => {
     await waitFor(() => expect(mockSubscribeCrosshair).toHaveBeenCalled());
 
     const handler = getCrosshairHandler()!;
-    const tooltipEl = document.querySelector<HTMLDivElement>("[style*='pointer-events: none'][style*='z-index: 20']")!;
+    const tooltipEl = document.querySelector<HTMLDivElement>("[data-testid='volume-tooltip']")!;
 
     handler({
       time: "2025-01-01",
@@ -205,7 +205,7 @@ describe("VolumeChart - crosshair tooltip", () => {
     await waitFor(() => expect(mockSubscribeCrosshair).toHaveBeenCalled());
 
     const handler = getCrosshairHandler()!;
-    const tooltipEl = document.querySelector<HTMLDivElement>("[style*='pointer-events: none'][style*='z-index: 20']")!;
+    const tooltipEl = document.querySelector<HTMLDivElement>("[data-testid='volume-tooltip']")!;
 
     handler({
       time: "2025-01-01",
@@ -222,7 +222,7 @@ describe("VolumeChart - crosshair tooltip", () => {
     await waitFor(() => expect(mockSubscribeCrosshair).toHaveBeenCalled());
 
     const handler = getCrosshairHandler()!;
-    const tooltipEl = document.querySelector<HTMLDivElement>("[style*='pointer-events: none'][style*='z-index: 20']")!;
+    const tooltipEl = document.querySelector<HTMLDivElement>("[data-testid='volume-tooltip']")!;
 
     handler({
       time: "2025-01-01",
@@ -239,7 +239,7 @@ describe("VolumeChart - crosshair tooltip", () => {
     await waitFor(() => expect(mockSubscribeCrosshair).toHaveBeenCalled());
 
     const handler = getCrosshairHandler()!;
-    const tooltipEl = document.querySelector<HTMLDivElement>("[style*='pointer-events: none'][style*='z-index: 20']")!;
+    const tooltipEl = document.querySelector<HTMLDivElement>("[data-testid='volume-tooltip']")!;
 
     // Show tooltip first
     handler({

@@ -1,0 +1,90 @@
+/* [project]/src/components/Header.module.css [app-client] (css) */
+.Header-module__hBw1pG__header {
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 0 var(--inset-m);
+  align-items: center;
+  gap: var(--space-l);
+  display: flex;
+}
+
+.Header-module__hBw1pG__logo {
+  font-family: var(--font-family-heading);
+  font-size: var(--heading-2-size);
+  letter-spacing: -.02em;
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.Header-module__hBw1pG__nav {
+  gap: var(--space-xs);
+  display: flex;
+}
+
+.Header-module__hBw1pG__navLink {
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--inset-xs) var(--inset-s);
+  border-radius: var(--radius-m);
+  font-size: var(--body-1-size);
+  color: var(--color-text-secondary);
+  background: none;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+  display: flex;
+}
+
+.Header-module__hBw1pG__navLinkActive {
+  color: var(--color-primary);
+  background: var(--color-bg-secondary);
+}
+
+.Header-module__hBw1pG__navLinkIcon {
+  font-size: 14px;
+}
+
+.Header-module__hBw1pG__controls {
+  align-items: center;
+  gap: var(--space-xs);
+  margin-left: auto;
+  display: flex;
+}
+
+.Header-module__hBw1pG__liveLabel {
+  color: var(--color-text-secondary);
+}
+
+.Header-module__hBw1pG__toggle {
+  background: var(--grey-60);
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  transition: background .2s;
+  position: relative;
+}
+
+.Header-module__hBw1pG__toggleOn {
+  background: var(--green-40);
+}
+
+.Header-module__hBw1pG__toggleThumb {
+  background: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  transition: left .2s;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.Header-module__hBw1pG__toggleThumbOn {
+  left: 18px;
+}
+
+/*# sourceMappingURL=src_components_Header_module_css_bad6b30c._.single.css.map*/

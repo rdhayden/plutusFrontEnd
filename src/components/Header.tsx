@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import styles from "./Header.module.css";
 
 const navItems = [
   { label: "Back Test", href: "/backtest", icon: "⚡" },
@@ -19,30 +20,10 @@ export default function Header({ liveMode = false, onLiveModeChange }: HeaderPro
   const pathname = usePathname();
 
   return (
-    <header
-      style={{
-        height: "var(--header-height)",
-        borderBottom: "1px solid var(--color-border)",
-        background: "var(--color-bg)",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 var(--inset-m)",
-        gap: "var(--space-l)",
-      }}
-    >
-      <span
-        style={{
-          fontFamily: "var(--font-family-heading)",
-          fontSize: "var(--heading-2-size)",
-          fontWeight: 700,
-          letterSpacing: "-0.02em",
-          color: "var(--color-text-primary)",
-        }}
-      >
-        TradingHub
-      </span>
+    <header className={styles.header}>
+      <span className={styles.logo}>TradingHub</span>
 
-      <nav style={{ display: "flex", gap: "var(--space-xs)" }}>
+      <nav className={styles.nav}>
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -53,68 +34,25 @@ export default function Header({ liveMode = false, onLiveModeChange }: HeaderPro
             <Link
               key={item.href}
               href={item.href}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-xs)",
-                padding: "var(--inset-xs) var(--inset-s)",
-                borderRadius: "var(--radius-m)",
-                textDecoration: "none",
-                fontSize: "var(--body-1-size)",
-                fontWeight: 500,
-                color: isActive
-                  ? "var(--color-primary)"
-                  : "var(--color-text-secondary)",
-                background: isActive ? "var(--color-bg-secondary)" : "transparent",
-                transition: "background 0.15s, color 0.15s",
-              }}
+              className={`${styles.navLink}${isActive ? ` ${styles.navLinkActive}` : ""}`}
             >
-              <span style={{ fontSize: "14px" }}>{item.icon}</span>
+              <span className={styles.navLinkIcon}>{item.icon}</span>
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "var(--space-xs)" }}>
-        <span
-          className="body-1"
-          style={{
-            color: "var(--color-text-secondary)",
-            fontSize: "var(--body-1-size)",
-          }}
-        >
-          Live
-        </span>
+      <div className={styles.controls}>
+        <span className={`body-1 ${styles.liveLabel}`}>Live</span>
         <button
           role="switch"
           aria-checked={liveMode}
           aria-label="Toggle live mode"
           onClick={() => onLiveModeChange?.(!liveMode)}
-          style={{
-            width: "36px",
-            height: "20px",
-            borderRadius: "10px",
-            border: "none",
-            background: liveMode ? "var(--green-40)" : "var(--grey-60)",
-            cursor: "pointer",
-            position: "relative",
-            transition: "background 0.2s",
-            flexShrink: 0,
-          }}
+          className={`${styles.toggle}${liveMode ? ` ${styles.toggleOn}` : ""}`}
         >
-          <span
-            style={{
-              position: "absolute",
-              top: "2px",
-              left: liveMode ? "18px" : "2px",
-              width: "16px",
-              height: "16px",
-              borderRadius: "50%",
-              background: "white",
-              transition: "left 0.2s",
-            }}
-          />
+          <span className={`${styles.toggleThumb}${liveMode ? ` ${styles.toggleThumbOn}` : ""}`} />
         </button>
       </div>
     </header>
